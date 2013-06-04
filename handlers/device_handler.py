@@ -21,7 +21,7 @@ class DeviceHandler(GetHandler):
         
             devices[device.identifier] = device_info
         
-        #Cache().set(("drivers-%s-devices" % (dcn)), devices, 3600)
+        Cache().set(str("drivers-%s-devices" % (dcn)), devices, 3600)
         
         return self.json_response(devices)
     
