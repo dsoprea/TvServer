@@ -1,5 +1,27 @@
 from handlers import GetHandler
+from device.drivers import available_drivers
+from cache import Cache
 
 
 class DeviceHandler(GetHandler):
-    pass
+    def list(self, dcn):
+        """Find devices for the given driver.
+        
+        dcn: Driver class name
+        """
+        
+        (driver_cls, device_cls) = available_drivers[dcn]
+        devices_raw = driver_cls().enumerate_devices()
+        
+        devices = {}
+        for device in devices_raw:
+            device_info = { 'address': device.address, \
+                            'tuner_quantity': device.tuner_quantity, \
+                            'adapter_index': device.adapter_index }
+        
+            devices[device.identifier] = device_info
+        
+        #Cache().set(("drivers-%s-devices" % (dcn)), devices, 3600)
+        
+        return self.json_response(devices)
+    

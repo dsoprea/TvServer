@@ -4,6 +4,8 @@ import subprocess
 import multiprocessing
 import Queue
 
+from hashlib import sha1
+
 from json import loads, dumps
 from os.path import expanduser, isfile, isdir, dirname, exists
 from os import listdir, stat, minor, major, environ, kill
@@ -92,8 +94,10 @@ class DeviceFileDevice(TunerDeviceCommon, ITunerDevice):
     def identifier(self):
         """Return a unique identifer for this device."""
     
-        return ('%s(%s,%s)' % (self.__driver.name, self.__adapter, 
-                               self.__sn[0:5]))
+        unique_string = ('%s(%s,%s)' % (self.__driver.name, self.__adapter, 
+                                        self.__sn[0:5]))
+        
+        return sha1(unique_string).hexdigest()
         
     @property
     def address(self):

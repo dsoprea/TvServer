@@ -8,7 +8,7 @@ def split_parameters(raw_string):
         return {}
     
     parts = raw_string.split('/')
-    if parts % 2 == 1:
+    if len(parts) % 2 == 1:
         parts.add('')
     
     return dict([(parts[i], parts[i + 1]) \
