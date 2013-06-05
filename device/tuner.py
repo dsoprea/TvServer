@@ -4,7 +4,8 @@ from threading import Lock, RLock
 
 #from rain.common.modules import cf
 from interfaces.device.ituner import ITuner
-from interfaces.device.ituner import *
+from interfaces.device.ituner import A_ALLOCATED, A_RELEASED, \
+                                     TUNER_ACTIVITY_TYPES
 from device.tuner_info import TunerInfo
 
 from logging import getLogger
@@ -12,26 +13,22 @@ logging = getLogger(__name__)
 
 
 class Tuner(ITuner):
-    """Controls some tuner functionality."""
+    """Manages allocated and available the individual tuners of every device.
+    """
 
     #__device_store = None
-
-# TODO: Set this back to zero. 
-    # We can't move this constant into the config, because, as a component,
-    # this can be overridable with alternate functionality. Values specific to
-    # this component need to stay in this component.
-    #
-    # This is zero-based.
-    __default_index = 1
+    __default_index = 0
 
     def __init__(self):
         #self.__device_store = cf.get(values.C_DEV_STORAGE)
 
+        # Tuner: (allocation_data, [<listeners>])
         self.__allocations = {}
+
         self.__global_listeners = []
 
         self.update_tuners()
-# TODO: Make sure that this gets called.
+
     def update_tuners(self, with_device=None):
         """Load any missing tuners into allocations, and remove anything that's 
         no longer configured.
@@ -303,7 +300,8 @@ class Tuner(ITuner):
         except:
             logging.exception("Touch-listener failed for tuner-index (%d) "
                               "on device [%s] (status change)." % 
-                              (tuner_index, device))
+                              (specific_tuner.tuner_index, 
+                               specific_tuner.device))
             raise
 
     def release_tuner(self, specific_tuner):
@@ -328,8 +326,9 @@ class Tuner(ITuner):
                                        allocation_data)
             except:
                 logging.exception("Touch-listener failed for tuner-index (%d) "
-                                  "on device [%s] (release)." % (tuner_index, 
-                                                                 device))
+                                  "on device [%s] (release)." % 
+                                  (specific_tuner.tuner_index, 
+                                   specific_tuner.device))
                 raise
 
     def get_statuses(self):

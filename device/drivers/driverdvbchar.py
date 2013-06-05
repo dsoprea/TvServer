@@ -736,6 +736,7 @@ class DriverDvbChar(ITunerDriver):
                                   (tuner, e))
                 raise
 
+            tuner.vchannel = None
             del self.__tuned[key]
 
         tuner.vchannel = vchannel_scalar
@@ -748,6 +749,7 @@ class DriverDvbChar(ITunerDriver):
 
             self.__tuned[key] = [queue, tune, TS_1_INITIAL]
             tune.start()
+            tuner.vchannel = vchannel_scalar
 
 # TODO: Make sure that the tuning process' information is cleaned-up properly.
 # TODO: Make sure that the check_tuning_status() calls correctly determine the current state of the tuning process.
