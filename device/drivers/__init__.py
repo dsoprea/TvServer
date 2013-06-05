@@ -1,8 +1,8 @@
-from device.drivers import driverdevicefile
+from device.drivers import driverdvbchar
 from device.drivers import driverhdhomerun
 
 available_drivers = \
-    { driverdevicefile.DriverDeviceFile.__name__: \
-        (driverdevicefile.DriverDeviceFile, driverdevicefile.DeviceFileDevice),
+    { driverdvbchar.DriverDvbChar.__name__: \
+        (driverdvbchar.DriverDvbChar, driverdvbchar.DeviceDvbChar),
       driverhdhomerun.DriverHdHomeRun.__name__: \
         (driverhdhomerun.DriverHdHomeRun, driverhdhomerun.DeviceHdHomeRun) }

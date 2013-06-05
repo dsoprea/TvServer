@@ -7,7 +7,7 @@ import Queue
 from hashlib import sha1
 
 from json import loads, dumps
-from os.path import expanduser, isfile, isdir, dirname, exists
+from os.path import expanduser, isfile, isdir, dirname, exists, basename
 from os import listdir, stat, minor, major, environ, kill
 from fnmatch import fnmatch
 from platform import system
@@ -47,8 +47,9 @@ TS_2_TRYING    = 'trying'
 TS_3_LOCKED    = 'locked'
 TS_4_CANCELLED = 'done'
 
-class DeviceFileDevice(TunerDeviceCommon, ITunerDevice):
-    """Represents a device enumerated via DriverDeviceFile."""
+
+class DeviceDvbChar(TunerDeviceCommon, ITunerDevice):
+    """Represents a device enumerated via DriverDvbChar."""
 
     __driver      = None
     __adapter     = None
@@ -92,18 +93,13 @@ class DeviceFileDevice(TunerDeviceCommon, ITunerDevice):
 
     @property
     def identifier(self):
-        """Return a unique identifer for this device."""
+        """Return an adapter-filepath."""
 
-        unique_string = ('%s(%s,%s)' % (self.__driver.name, self.__adapter,
-                                        self.__sn[0:5]))
-
-        return sha1(unique_string).hexdigest()
+        return self.address
 
     @property
     def address(self):
-        """Returns the network address, memory location, etc.., where this
-        device is listening.
-        """
+        """Returns the DVB file-path."""
 
         return self.__adapter
 
@@ -162,11 +158,13 @@ class DeviceFileDevice(TunerDeviceCommon, ITunerDevice):
     def adapter_index(self, value):
         self.__adapter_index = value
 
+
 class _ExecuteError(Exception):
     """There was a failure executing an external command."""
 
     def __init__(self, retval):
         Exception.__init__(self, "Command failed with (%d)." % (retval))
+
 
 # TODO: Update the channels-conf references for our channel-list concept.
 
@@ -336,7 +334,8 @@ class _TuneChannel(multiprocessing.Process):#, ManagedRoutine):
     def is_cancelled(self):
         return self.__cancel_set.is_set()
 
-class DriverDeviceFile(ITunerDriver):
+
+class DriverDvbChar(ITunerDriver):
     """Represents an interface to a device represented by a
     /dev/dvb/adapter<n> device.
     """
@@ -346,6 +345,46 @@ class DriverDeviceFile(ITunerDriver):
     __tuned                 = {}
 
     __device_search_path = '/dev/dvb'
+
+    def build_from_id(self, id_):
+        """Our id is the filepath of the adapter."""
+        
+        adapter_filepath = id_
+        adapter_filename = basename(id_)
+        
+        adapter_rx = re.compile('adapter([0-9]+)$')
+        result = adapter_rx.match(adapter_filename)
+        if not result:
+            raise Exception("ID [%s] for driver-device is not the correct format.")
+            
+        adapter_index = int(result.group(1))
+        
+        try:
+            device_sets = self.__get_tuners_on_adapter(adapter_filepath)
+        except:
+            logging.exception("Could not retrieve tuners for [%s]." %
+                              (adapter_filepath))
+            raise
+
+        try:
+            sn = self.__build_sn(device_sets, adapter_filepath)
+        except:
+            logging.exception("Could not build SN for device [%s]." %
+                              (adapter_filepath))
+            raise
+
+        try:
+            device = DriverDvbChar.__build_device(self,
+                                                     adapter_filepath,
+                                                     adapter_index,
+                                                     sn,
+                                                     device_sets)
+        except:
+            logging.exception("Could not build device for adapter [%s] "
+                              "during enumeration." % (adapter_filepath))
+            raise
+
+        return device
 
     def enumerate_devices(self):
         """List available devices."""
@@ -357,36 +396,12 @@ class DriverDeviceFile(ITunerDriver):
             raise
 
         devices = []
-        for adapter in adapters:
-            (adapter_filepath, adapter_index) = adapter
+        for adapter_filepath in adapters:
+            device = self.build_from_id(adapter_filepath)
 
 # If the SN has been given, check it against what we can calculate, here, and
 # tell the system to ignore the device if the SNs don't match (the device is
 # not present).
-            try:
-                device_sets = self.__get_tuners_on_adapter(adapter_filepath)
-            except:
-                logging.exception("Could not retrieve tuners for [%s]." %
-                                  (adapter_filepath))
-                raise
-
-            try:
-                sn = self.__build_sn(device_sets, adapter_filepath)
-            except:
-                logging.exception("Could not build SN for device [%s]." %
-                                  (adapter_filepath))
-                raise
-
-            try:
-                device = DriverDeviceFile.__build_device(self,
-                                                         adapter_filepath,
-                                                         adapter_index,
-                                                         sn,
-                                                         device_sets)
-            except:
-                logging.exception("Could not build device for adapter [%s] "
-                                  "during enumeration." % (adapter_filepath))
-                raise
 
             devices.append(device)
 
@@ -403,14 +418,13 @@ class DriverDeviceFile(ITunerDriver):
         logging.debug("Building device object for adapter [%s]." % (adapter))
 
         try:
-            return DeviceFileDevice(driver,
-                                     adapter,
-                                     adapter_index,
-                                     device_sets,
-                                     sn,
-                                     channellist,
-                                     atsc_type
-                                    )
+            return DeviceDvbChar(driver,
+                                 adapter,
+                                 adapter_index,
+                                 device_sets,
+                                 sn,
+                                 channellist,
+                                 atsc_type)
         except:
             logging.exception("Could not build device for device-path "
                               "[%s]." % (adapter))
@@ -504,14 +518,14 @@ class DriverDeviceFile(ITunerDriver):
             try:
                 channellist = channel_storage.get_channellist(channellist)
             except:
-                logging.exception("Could not restore DriverDeviceFile device with "
+                logging.exception("Could not restore DriverDvbChar device with "
                                   "broken channel-list: %s" % (data))
                 raise
 
-        driver = DriverDeviceFile()
+        driver = DriverDvbChar()
 
         try:
-            device = DriverDeviceFile.__build_device(driver,
+            device = DriverDvbChar.__build_device(driver,
                                                      data['Adapter'],
                                                      data['AdapterIndex'],
                                                      data['Sn'],
@@ -862,8 +876,7 @@ class DriverDeviceFile(ITunerDriver):
             result = adapter_rx.match(filename)
             if result:
                 adapter_filepath = ("%s/%s" % (dev_path, filename))
-                adapter_index = int(result.group(1))
-                adapters.append((adapter_filepath, adapter_index))
+                adapters.append(adapter_filepath)
 
         logging.info("(%d) device(s) found in [%s]." %
                      (len(adapters), dev_path))
@@ -950,7 +963,7 @@ class DriverDeviceFile(ITunerDriver):
     def name(self):
         """Returns a nice, human-readable name for this driver."""
 
-        return 'RawDevice'
+        return 'DvbCharDevice'
 
     @property
     def description(self):

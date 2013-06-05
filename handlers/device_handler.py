@@ -24,17 +24,3 @@ class DeviceHandler(GetHandler):
         Cache().set(str("drivers-%s-devices" % (dcn)), devices, 3600)
 
         return self.json_response(devices)
-
-    def tune(self, did, name, freq, mod, vid, aid, pid):
-        """Tune a channel given the tuning parameters.
-
-        did: Device ID.
-        name: Name of channel.
-        freq: Frequency of channel.
-        mod: Modulation of channel.
-        vid: VideoID
-        aid: AudioID
-        pid: ProgramID
-        """
-
-
