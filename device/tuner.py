@@ -1,15 +1,15 @@
 from threading import Lock, RLock
 
-from rain_config import values
+#from rain_config import values
 
-from rain.common.modules import cf
-from rain.dvr.interfaces.device.ituner import ITuner
-from rain.dvr.interfaces.device.ituner import *
-from rain.dvr.modules.device.utility import get_tuner_index
-from rain.dvr.modules.device.tuner_info import TunerInfo
+#from rain.common.modules import cf
+from interfaces.device.ituner import ITuner
+from interfaces.device.ituner import *
+from device.tuner_info import TunerInfo
 
 from logging import getLogger
 logging = getLogger(__name__)
+
 
 class Tuner(ITuner):
     """Controls some tuner functionality."""
@@ -28,14 +28,14 @@ class Tuner(ITuner):
     __global_listeners = None
 
     def __init__(self):
-        self.__device_store = cf.get(values.C_DEV_STORAGE)
+        #self.__device_store = cf.get(values.C_DEV_STORAGE)
 
         self.__allocations = {}
         self.__global_listeners = []
 
         self.update_tuners()
 # TODO: Make sure that this gets called.
-    def update_tuners(self):
+    def update_tuners(self, with_device=None):
         """Load any missing tuners into allocations, and remove anything that's 
         no longer configured.
         """
@@ -43,17 +43,17 @@ class Tuner(ITuner):
         logging.debug("Populating tuner-management object with list of "
                       "devices.")
 
-        try:
-            devices = self.__device_store.retrieve_list()
-        except:
-            logging.exception("Could not retrieve devices.")
-            raise
+#        try:
+#            devices = self.__device_store.retrieve_list()
+#        except:
+#            logging.exception("Could not retrieve devices.")
+#            raise
 
         with Tuner.tuner_locker:
 
             # Determine which devices no longer exist.
             for device, tuner_allocations in self.__allocations.items():
-                if device not in devices:
+                if device.driver.is_available(device) is False:
 
                     # Check each tuner slot for whether or not it's allocated.
                     for tuner_index in xrange(len(tuner_allocations)):
@@ -73,16 +73,16 @@ class Tuner(ITuner):
                     del self.__allocations[device]
 
             # Add new devices.
-            for device in devices:
-                if device not in self.__allocations.keys():
-                    # For each device, allow for allocation-data (set when 
-                    # allocated), along with a list of event listeners.
+            if with_device is not None and \
+               with_device not in self.__allocations.keys():
+                # For each device, allow for allocation-data (set when 
+                # allocated), along with a list of event listeners.
+# TODO: Add a hash function to the device and driver classes.
+                self.__allocations[with_device] = []
+                for tuner_index in xrange(with_device.tuner_quantity):
+                    self.__allocations[with_device].append([None, []])
 
-                    self.__allocations[device] = []
-                    for tuner_index in xrange(device.tuner_quantity):
-                        self.__allocations[device].append([None, []])
-
-    def get_default_tuner_index(self, device):
+    def __get_default_tuner_index(self, device):
         """When a tuner is required, start with the index that we return."""
         
         # We do a MOD so that we can have a system-default, but never overflow 
@@ -93,7 +93,7 @@ class Tuner(ITuner):
         
         return index
         
-    def get_next_tuner_index(self, device, current_index):
+    def __get_next_tuner_index(self, device, current_index):
         """When another tuner is required, return the next one to be 
         used/attempted.
         """
@@ -177,11 +177,50 @@ class Tuner(ITuner):
                                                    specific_tuner.device))
                 raise
 
-    def request_tuner(self, allocation_data=None, specific_driver_name=None, 
+    def __get_tuner_index(self, device, exclude=[]):
+        """Return the tuner-index to use, optionally excluding those in the given
+        list. Returns None if all are consumed.
+        """
+    
+        logging.info("Getting tuner index given exclude list [%s] with device "
+                     "[%s]." % (','.join([str(one_excluded) for one_excluded \
+                                                            in exclude]), device))
+    
+        # Find a tuner that's not used. In the event that we later outsource the
+        # functionality to driver-defined functionality, we keep track of what 
+        # we've tried to prevent cycles.
+    
+        tuners = range(device.tuner_quantity)
+        candidate = self.__get_default_tuner_index(device)
+    
+        tuners.remove(candidate)
+    
+        found = False
+        i = device.tuner_quantity
+        while i > 0:
+            # Current candidate is electable.    
+            if candidate not in exclude:
+                found = True
+                break
+    
+            # No more tuners are available to be picked from.
+            if not tuners:
+                break
+    
+            # The assumption that this will never return the same tuner if 
+            # (i < (num_tuners - 1)).
+            candidate = self.__get_next_tuner_index(device, candidate)
+            
+            tuners.remove(candidate)
+            i -= 1
+    
+        return candidate if found else None
+
+    def request_tuner(self, allocation_data=None, specific_driver=None, 
                       specific_device=None):
         """Reserve the first available tuner for the requester."""
 
-        self.update_tuners()
+        self.update_tuners(specific_device)
 
         with Tuner.tuner_locker:
 
@@ -190,26 +229,25 @@ class Tuner(ITuner):
 
             for device, tuner_allocations in self.__allocations.items():
                 # If we wanted to request on a specific device and this isn't
-                # it, skip.
-
-                if specific_device and device.identifier != specific_device.identifier:
-                    continue
-
+                # it, skip. If it matches, we skip the specific_driver check.
+                if specific_device is not None:
+                    if device.identifier != specific_device.identifier:
+                        continue
                 # If we wanted to constrain devices by driver and the driver is
                 # wrong, skip.
-                elif specific_driver_name != None and \
-                     device.driver.__class__.__name__ != specific_driver_name:
+                elif specific_driver is not None and \
+                     device.driver.__class__ != specific_driver.__class__:
                     continue
             
                 used = []
                 for tuner_index in xrange(len(tuner_allocations)):
                     entry = tuner_allocations[tuner_index]
 
-                    if entry[0] != None:
+                    if entry[0] is not None:
                         used.append(tuner_index)
 
-                try:            
-                    elected = get_tuner_index(device, used)
+                try:
+                    elected = self.__get_tuner_index(device, used)
                 except:
                     logging.exception("Could not acquire tuner index for "
                                       "device [%s] with exclude list [%s]." % 

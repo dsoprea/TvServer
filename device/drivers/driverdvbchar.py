@@ -25,8 +25,8 @@ from interfaces.device.itunerdevice import ITunerDevice
 from interfaces.device.ituner import *
 from device.device_network_attached import DeviceNetworkAttached
 from device.tuner_device_common import TunerDeviceCommon
-from device import DriverRequirementsError, DriverConfigurationError
-
+from device import DriverRequirementsError, DriverConfigurationError, \
+                   DeviceDoesNotExist
 
 #from mediaconsole.modules.media.container_info import ContainerInfo
 #from mediaconsole.modules.media.video_info     import VideoInfo
@@ -46,6 +46,12 @@ TS_1_INITIAL   = 'initial'
 TS_2_TRYING    = 'trying'
 TS_3_LOCKED    = 'locked'
 TS_4_CANCELLED = 'done'
+
+def _encode_adapter_filepath_to_id(device_id):
+    return device_id[1:].replace('/', '-')
+
+def _decode_adapter_filepath_from_id(encoded_device_id):
+    return '/' + encoded_device_id.replace('-', '/')
 
 
 class DeviceDvbChar(TunerDeviceCommon, ITunerDevice):
@@ -95,7 +101,7 @@ class DeviceDvbChar(TunerDeviceCommon, ITunerDevice):
     def identifier(self):
         """Return an adapter-filepath."""
 
-        return self.address
+        return _encode_adapter_filepath_to_id(self.address)
 
     @property
     def address(self):
@@ -349,8 +355,8 @@ class DriverDvbChar(ITunerDriver):
     def build_from_id(self, id_):
         """Our id is the filepath of the adapter."""
         
-        adapter_filepath = id_
-        adapter_filename = basename(id_)
+        adapter_filepath = _decode_adapter_filepath_from_id(id_)
+        adapter_filename = basename(adapter_filepath)
         
         adapter_rx = re.compile('adapter([0-9]+)$')
         result = adapter_rx.match(adapter_filename)
@@ -397,7 +403,7 @@ class DriverDvbChar(ITunerDriver):
 
         devices = []
         for adapter_filepath in adapters:
-            device = self.build_from_id(adapter_filepath)
+            device = self.build_from_id(_encode_adapter_filepath_to_id(adapter_filepath))
 
 # If the SN has been given, check it against what we can calculate, here, and
 # tell the system to ignore the device if the SNs don't match (the device is
@@ -903,7 +909,12 @@ class DriverDvbChar(ITunerDriver):
         dvr_rx      = re.compile('^dvr([0-9]+)$')
         frontend_rx = re.compile('^frontend([0-9]+)$')
 
-        constituents = listdir(adapter)
+        try:
+            constituents = listdir(adapter)
+        except OSError:
+            raise DeviceDoesNotExist("Adapter path [%s] may no longer exist." % 
+                                     (adapter))
+            
         device_matrix = []
 
         for filename in constituents:

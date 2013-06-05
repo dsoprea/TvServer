@@ -1,10 +1,10 @@
 import json
 
-from rain_config import values
+#from rain_config import values
 
-from rain.common.interfaces.idictable import IDictable
-from rain.common.interfaces.iserializable import ISerializable
-from rain.common.modules import cf
+from interfaces.idictable import IDictable
+from interfaces.iserializable import ISerializable
+#from rain.common.modules import cf
 
 from logging import getLogger
 logging = getLogger(__name__)
@@ -78,13 +78,26 @@ class TunerInfo(IDictable):
     def serialize(obj):
         """Reduce the given object to a string."""
 
-        return json.dumps(TunerInfo.convert_to_dict(obj))
+        data = TunerInfo.convert_to_dict(obj)
+        return ('%s:%s:%s:%s' % (data['DeviceIdent'], 
+                                 data['TunerIndex'], 
+                                 data['VChannel'] if data['VChannel'] \
+                                                    is not None \
+                                                  else '', 
+                                 data['UniqueId']))
 
     @staticmethod
     def unserialize(data):
         """Restore an object from a string."""
 
-        return TunerInfo.convert_from_dict(json.loads(data))
+        (device_ident, tuner_index, vchannel, unique_id) = data.split(':')[0:4]
+
+        data = { 'DeviceIdent': device_ident,
+                 'TunerIndex':  int(tuner_index),
+                 'VChannel':    int(vchannel) if vchannel else None,
+                 'UniqueId':    unique_id }
+
+        return TunerInfo.convert_from_dict(data)
 
     @property
     def unique_id(self):

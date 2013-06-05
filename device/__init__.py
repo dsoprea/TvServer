@@ -1,5 +1,11 @@
-class DriverRequirementsError(Exception):
+class DeviceException(Exception):
     pass
 
-class DriverConfigurationError(Exception):
+class DriverRequirementsError(DeviceException):
+    pass
+
+class DriverConfigurationError(DeviceException):
+    pass
+
+class DeviceDoesNotExist(DeviceException):
     pass
