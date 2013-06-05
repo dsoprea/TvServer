@@ -7,7 +7,7 @@ class DriverHandler(GetHandler):
         distilled = {}
         for pair in available_drivers.iteritems():
             (driver_cls_name, (driver_cls, device_cls)) = pair
-            
+
             driver = driver_cls()
             distilled[driver_cls_name] = (driver.name, driver.description)
 
@@ -16,7 +16,7 @@ class DriverHandler(GetHandler):
     def info(self, dcn):
         (driver_cls, device_cls) = available_drivers[dcn]
         driver = driver_cls()
-        
+
         info = { 'supports_channelscan': driver.supports_channelscan }
 
         return self.json_response(info)

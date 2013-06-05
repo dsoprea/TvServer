@@ -9,13 +9,13 @@ class PrimitiveChannelList(object):
     __cache = None
 
     def __init__(self, sort_function=None):
-    
+
         self.__sort_function = sort_function if sort_function \
                                              else self.__default_sort_function
 
     def __default_sort_function(self, channels):
         """By default, sort by key and return in an OrderedDict."""
-    
+
         sorted_keys = sorted(channels.keys())
 
         ordered_channels = OrderedDict()
@@ -26,7 +26,7 @@ class PrimitiveChannelList(object):
 
     def add(self, designation, name, data=None):
         """Add a channel to the list.
-        
+
         designation: Number/index/etc of channel.
         name: Name of channel.
         """
@@ -53,6 +53,6 @@ class PrimitiveChannelList(object):
             except:
                 logging.exception("Could not get sorted list of channels.")
                 raise
-        
+
         return self.__cache
 

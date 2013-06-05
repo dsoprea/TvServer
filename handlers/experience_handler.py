@@ -22,7 +22,7 @@ logging = getLogger(__name__)
 
 class ExperienceHandler(GetHandler):
     def allocate_handler(self, event_message, response_event_name):
-        logging.info("Host [%s] wants to allocate a tuner." % 
+        logging.info("Host [%s] wants to allocate a tuner." %
                      (event_message.hostname))
 
 # TODO: Also, allow a specific device to be requested.
@@ -41,9 +41,9 @@ class ExperienceHandler(GetHandler):
             raise
 
         if tuner:
-            logging.info("Tuner [%s] has been allocated for host [%s]." % 
+            logging.info("Tuner [%s] has been allocated for host [%s]." %
                          (tuner, event_message.hostname))
-        
+
             tuner_serialized = TunerInfo.serialize(tuner)
 
             # Remember what tuner has been allocated for this client.
@@ -51,21 +51,21 @@ class ExperienceHandler(GetHandler):
         else:
             logging.info("No tuner was available for allocation by host "
                          "[%s]." % (event_message.hostname))
-        
+
             tuner_serialized = None
 
         data = { 'Tuner': tuner_serialized }
-    
-        event_message.respond(event_message.event_type, 
-                              response_event_name, 
+
+        event_message.respond(event_message.event_type,
+                              response_event_name,
                               data)
 
 # TODO: !! Emit an ERROR message when there's a problem with handling a request.
     def handle_tune_channel(self, event_message, response_event_name):
 
-        logging.info("Host [%s] wants to tune a tuner." % 
+        logging.info("Host [%s] wants to tune a tuner." %
                      (event_message.hostname))
-    
+
         try:
             tuner_serialized = event_message.payload['Tuner']
             channel_number = int(event_message.payload['ChannelNumber']) \
@@ -87,7 +87,7 @@ class ExperienceHandler(GetHandler):
         # Verify authorization for tuner.
 
         if not self.__get_client_state(event_message).has_tuner(tuner_serialized):
-            logging.error("Hostname [%s] is not authorized for tuner [%s]." % 
+            logging.error("Hostname [%s] is not authorized for tuner [%s]." %
                           (event_message.hostname, tuner_serialized))
             raise
 
@@ -97,7 +97,7 @@ class ExperienceHandler(GetHandler):
             logging.exception("Could not restore tuner: %s" % (tuner_serialized))
             raise
 
-        logging.info("Host [%s] wants to tune tuner [%s]." % 
+        logging.info("Host [%s] wants to tune tuner [%s]." %
                      (event_message.hostname, tuner))
 
         # Set channel.
@@ -105,20 +105,20 @@ class ExperienceHandler(GetHandler):
         try:
             tuner.easy_set_vchannel(channel_number)
         except:
-            logging.exception("Could not set tuner [%s] to channel [%d]." % 
+            logging.exception("Could not set tuner [%s] to channel [%d]." %
                               (tuner, channel_number))
             raise
 
-        # Tuning status will be sent via regular tuning-related events to 
+        # Tuning status will be sent via regular tuning-related events to
         # client.
 
         data = { 'Response':      'ok',
                  'Tuner':         tuner_serialized,
                  'ChannelNumber': channel_number,
                  'ChannelName':   channel_name }
-    
-        event_message.respond(event_message.event_type, 
-                              'tune_channel_response', 
+
+        event_message.respond(event_message.event_type,
+                              'tune_channel_response',
                               data)
 
     def handle_stop_recording(self, event_message, response_event_name):
@@ -133,7 +133,7 @@ class ExperienceHandler(GetHandler):
         # Verify authorization for tuner.
 
         if not self.__get_client_state(event_message).has_tuner(tuner_serialized):
-            logging.error("Hostname [%s] is not authorized for tuner [%s]." % 
+            logging.error("Hostname [%s] is not authorized for tuner [%s]." %
                           (event_message.hostname, tuner_serialized))
             raise
 
@@ -146,7 +146,7 @@ class ExperienceHandler(GetHandler):
         client_collection = cf.get(values.C_CLIENT_CLIENTCOLLECTION)
         hostname = event_message.hostname
 
-        logging.info("Host [%s] wants to stop recording on tuner [%s]." % 
+        logging.info("Host [%s] wants to stop recording on tuner [%s]." %
                      (event_message.hostname, tuner))
 
         client_state = client_collection.get(hostname)
@@ -154,11 +154,11 @@ class ExperienceHandler(GetHandler):
         try:
             client_state.clear_writer(tuner_serialized)
         except:
-            logging.exception("Could not clear writer for tuner [%s]." % 
+            logging.exception("Could not clear writer for tuner [%s]." %
                               (tuner_serialized))
             raise
 
-        logging.info("Writer for hostname [%s] and tuner [%s] stopped." % 
+        logging.info("Writer for hostname [%s] and tuner [%s] stopped." %
                      (hostname, tuner))
 
     def handle_start_recording(self, event_message, response_event_name):
@@ -173,7 +173,7 @@ class ExperienceHandler(GetHandler):
         # Verify authorization for tuner.
 
         if not self.__get_client_state(event_message).has_tuner(tuner_serialized):
-            logging.error("Hostname [%s] is not authorized for tuner [%s]." % 
+            logging.error("Hostname [%s] is not authorized for tuner [%s]." %
                           (event_message.hostname, tuner_serialized))
             raise
 
@@ -183,7 +183,7 @@ class ExperienceHandler(GetHandler):
             logging.exception("Could not restore tuner: %s" % (tuner_serialized))
             raise
 
-        logging.info("Host [%s] wants to record on tuner [%s]." % 
+        logging.info("Host [%s] wants to record on tuner [%s]." %
                      (event_message.hostname, tuner))
 
         # Build writer.
@@ -203,7 +203,7 @@ class ExperienceHandler(GetHandler):
             print("Transferred: %d" % (transferred))
 
         try:
-            writer = PipeWriter(output_filepath, None, progress_callback, 
+            writer = PipeWriter(output_filepath, None, progress_callback,
                                 routine_close_priority.P_PIPEWRITER_THREAD)
         except:
             logging.exception("Could not build writer.")
