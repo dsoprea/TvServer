@@ -7,7 +7,7 @@ import Queue
 from hashlib import sha1
 
 from json import loads, dumps
-from os.path import expanduser, isfile, isdir, dirname, exists
+from os.path import expanduser, isfile, isdir, dirname, exists, basename
 from os import listdir, stat, minor, major, environ, kill
 from fnmatch import fnmatch
 from platform import system
@@ -25,8 +25,8 @@ from interfaces.device.itunerdevice import ITunerDevice
 from interfaces.device.ituner import *
 from device.device_network_attached import DeviceNetworkAttached
 from device.tuner_device_common import TunerDeviceCommon
-from device import DriverRequirementsError, DriverConfigurationError
-
+from device import DriverRequirementsError, DriverConfigurationError, \
+                   DeviceDoesNotExist
 
 #from mediaconsole.modules.media.container_info import ContainerInfo
 #from mediaconsole.modules.media.video_info     import VideoInfo
@@ -47,8 +47,15 @@ TS_2_TRYING    = 'trying'
 TS_3_LOCKED    = 'locked'
 TS_4_CANCELLED = 'done'
 
-class DeviceFileDevice(TunerDeviceCommon, ITunerDevice):
-    """Represents a device enumerated via DriverDeviceFile."""
+def _encode_adapter_filepath_to_id(device_id):
+    return device_id[1:].replace('/', '-')
+
+def _decode_adapter_filepath_from_id(encoded_device_id):
+    return '/' + encoded_device_id.replace('-', '/')
+
+
+class DeviceDvbChar(TunerDeviceCommon, ITunerDevice):
+    """Represents a device enumerated via DriverDvbChar."""
 
     __driver      = None
     __adapter     = None
@@ -58,7 +65,7 @@ class DeviceFileDevice(TunerDeviceCommon, ITunerDevice):
     __channellist = None
     __atsc_type   = None
 
-    def __init__(self, driver, adapter, adapter_index, device_sets, sn, 
+    def __init__(self, driver, adapter, adapter_index, device_sets, sn,
                  channellist=None, atsc_type=None):
         self.__driver        = driver
         self.__adapter       = adapter
@@ -75,61 +82,56 @@ class DeviceFileDevice(TunerDeviceCommon, ITunerDevice):
         channellist_name = self.__channellist.name if self.__channellist \
                                                    else None
 
-        return ('DEV-FILE %s(%s TUNERS=%d SN=%s CHANNELS=[%s] TYPE=%s STATE=%d)' % 
-                (self.__driver.__class__.__name__, 
-                 self.__adapter, 
+        return ('DEV-FILE %s(%s TUNERS=%d SN=%s CHANNELS=[%s] TYPE=%s STATE=%d)' %
+                (self.__driver.__class__.__name__,
+                 self.__adapter,
                  len(self.__device_sets),
                  self.__sn[0:5],
                  channellist_name,
                  self.__atsc_type,
                  int(self.driver.is_available(self))))
-    
+
     @property
     def driver(self):
         """Returns the driver that represents us."""
-    
+
         return self.__driver
 
     @property
     def identifier(self):
-        """Return a unique identifer for this device."""
-    
-        unique_string = ('%s(%s,%s)' % (self.__driver.name, self.__adapter, 
-                                        self.__sn[0:5]))
-        
-        return sha1(unique_string).hexdigest()
-        
+        """Return an adapter-filepath."""
+
+        return _encode_adapter_filepath_to_id(self.address)
+
     @property
     def address(self):
-        """Returns the network address, memory location, etc.., where this 
-        device is listening.
-        """
-    
+        """Returns the DVB file-path."""
+
         return self.__adapter
 
     @property
     def junk_data(self):
-        """Returns an object of an unspecified type that the driver knows how 
+        """Returns an object of an unspecified type that the driver knows how
         to interpret. Used for implementation-specific data to be passed from
         the device to the driver.
         """
 
         return { 'DeviceSets':   self.__device_sets,
                  'AtscType':     self.__atsc_type,
-                 'Adapter':      self.__adapter, 
+                 'Adapter':      self.__adapter,
                  'Sn':           self.__sn,
                }
 
     @property
     def tuner_quantity(self):
         """Returns the number of tuners available on the device."""
-        
+
         return len(self.__device_sets)
 
     @property
     def atsc_type(self):
         return self.__atsc_type
-    
+
     @atsc_type.setter
     def atsc_type(self, value):
         self.__atsc_type = value
@@ -138,14 +140,14 @@ class DeviceFileDevice(TunerDeviceCommon, ITunerDevice):
     def supported_channelliststypes(self):
         """Return the support channel-list classes that we support for tuning.
         """
-        
+
         return [channel_config.LT_CHANNELSCONF]
 
     @property
     def channellist(self):
         """Return an instance of the IChannelList that we currently tune with.
         """
-    
+
         return self.__channellist
 
     @channellist.setter
@@ -162,23 +164,25 @@ class DeviceFileDevice(TunerDeviceCommon, ITunerDevice):
     def adapter_index(self, value):
         self.__adapter_index = value
 
+
 class _ExecuteError(Exception):
     """There was a failure executing an external command."""
 
     def __init__(self, retval):
         Exception.__init__(self, "Command failed with (%d)." % (retval))
 
+
 # TODO: Update the channels-conf references for our channel-list concept.
 
 class _TuneChannel(multiprocessing.Process):#, ManagedRoutine):
-    """The multiprocessing process that invokes the external utilities to tune 
+    """The multiprocessing process that invokes the external utilities to tune
     channels.
     """
-    
+
     __tuner                 = None
     __msg_queue             = None
     __cancel_event          = None
-    
+
     def __init__(self, tuner, msg_queue):
         name = ('TuneChannel-%s' % (tuner.unique_id))
 
@@ -191,25 +195,25 @@ class _TuneChannel(multiprocessing.Process):#, ManagedRoutine):
 
     def run(self):
 
-        logging.info("Starting tuning process for tuner [%s] on PID (%s)." % 
+        logging.info("Starting tuning process for tuner [%s] on PID (%s)." %
                      (self.__tuner, self.pid))
 
-        try:    
+        try:
             self.__tune()
         except Exception as e:
             self.__msg_queue.put((MT_ERROR, "There was an exception: %s" % (str(e))))
             logging.exception("There was an exception while tuning. Tuning "
                               "cancelled.")
 
-        logging.info("Tuning process for tuner [%s] is stopping."% 
+        logging.info("Tuning process for tuner [%s] is stopping."%
                      (self.__tuner))
 
         self.__msg_queue.put((MT_CANCELLED, None))
 
     def __tune(self):
-        """Tune the channel. This is a blocking call. Note that if the 
-        v-channel is not valid, there will be an exception immediately, but 
-        that if there is a tuning error, the error will be emitted to the 
+        """Tune the channel. This is a blocking call. Note that if the
+        v-channel is not valid, there will be an exception immediately, but
+        that if there is a tuning error, the error will be emitted to the
         queue.
         """
 
@@ -240,7 +244,7 @@ class _TuneChannel(multiprocessing.Process):#, ManagedRoutine):
         audio_id       = channel_data['AudioId']
         program_id     = channel_data['ProgramId']
 
-        # Map from the modulation in the channels.conf to the modulation 
+        # Map from the modulation in the channels.conf to the modulation
         # required by PyZap.
 
         file_to_pyzap_mod = { 'QPSK':   'QPSK',
@@ -262,7 +266,7 @@ class _TuneChannel(multiprocessing.Process):#, ManagedRoutine):
             pyzap_modulation = modulation(pyzap_modulation_raw)
         except:
             logging.exception("Could not produce final module for PyZap "
-                              "modulation string [%s] (original [%s])." % 
+                              "modulation string [%s] (original [%s])." %
                               (pyzap_modulation_raw, modulation))
             raise
 
@@ -273,13 +277,13 @@ class _TuneChannel(multiprocessing.Process):#, ManagedRoutine):
         atsc_tune_info.vpid       = int(video_id)
         atsc_tune_info.apid       = int(audio_id)
 
-        # Do the tune. This will continue until the driver emits a SIGALRM, 
+        # Do the tune. This will continue until the driver emits a SIGALRM,
         # which will break the loop in ZapLib.
 
         def status_receiver(status, signal, snr, ber, uncorrected_blocks, \
                             is_locked):
             try:
-                status_package = (status, signal, snr, ber, 
+                status_package = (status, signal, snr, ber,
                                   uncorrected_blocks, is_locked)
 
                 self.__msg_queue.put((MT_STATUS, status_package))
@@ -287,7 +291,7 @@ class _TuneChannel(multiprocessing.Process):#, ManagedRoutine):
                 return 1
             except KeyboardInterrupt:
                 return 0
-                            
+
 #            print('%X' % status)
 #            print('%X' % signal)
 #            print('%X' % snr)
@@ -296,7 +300,7 @@ class _TuneChannel(multiprocessing.Process):#, ManagedRoutine):
 #            print('%X' % is_locked)
 
         try:
-            c_azap_tune_silent(descriptor, atsc_tune_info, 1, 
+            c_azap_tune_silent(descriptor, atsc_tune_info, 1,
                                STATUS_RECEIVER_CB(status_receiver))
         except Exception as e:
             logging.exception("There was an exception while doing the "
@@ -304,17 +308,17 @@ class _TuneChannel(multiprocessing.Process):#, ManagedRoutine):
             raise
 
     def cancel(self):
-        """Stop tuning the channel. Called by original process. This call must 
+        """Stop tuning the channel. Called by original process. This call must
         block until the thread has finished.
         """
-    
+
         logging.info("Cancelling tune on [%s]." % (self.__tuner))
-        
+
         self.__cancel_event.set()
-        
+
         logging.info("Sending SIGALRM to PID (%d) to cancel tuning." % (self.pid))
 
-        # We wrap the kill in a try-catch since we'll get an OSError if the 
+        # We wrap the kill in a try-catch since we'll get an OSError if the
         # process is already dead.
 
         try:
@@ -323,7 +327,7 @@ class _TuneChannel(multiprocessing.Process):#, ManagedRoutine):
             logging.error("Tuning process with PID (%d) could not be "
                           "cancelled (may already be dead)." % (self.pid))
 
-        # We wrap the join in a try-catch just in case it's an exception to 
+        # We wrap the join in a try-catch just in case it's an exception to
         # join a thread that might already not be alive.
 
         try:
@@ -332,12 +336,13 @@ class _TuneChannel(multiprocessing.Process):#, ManagedRoutine):
             pass
 
         logging.info("Cancel of tune on tuner [%s] complete." % (self.__tuner))
-        
+
     def is_cancelled(self):
         return self.__cancel_set.is_set()
-        
-class DriverDeviceFile(ITunerDriver):
-    """Represents an interface to a device represented by a 
+
+
+class DriverDvbChar(ITunerDriver):
+    """Represents an interface to a device represented by a
     /dev/dvb/adapter<n> device.
     """
 
@@ -346,6 +351,46 @@ class DriverDeviceFile(ITunerDriver):
     __tuned                 = {}
 
     __device_search_path = '/dev/dvb'
+
+    def build_from_id(self, id_):
+        """Our id is the filepath of the adapter."""
+        
+        adapter_filepath = _decode_adapter_filepath_from_id(id_)
+        adapter_filename = basename(adapter_filepath)
+        
+        adapter_rx = re.compile('adapter([0-9]+)$')
+        result = adapter_rx.match(adapter_filename)
+        if not result:
+            raise Exception("ID [%s] for driver-device is not the correct format.")
+            
+        adapter_index = int(result.group(1))
+        
+        try:
+            device_sets = self.__get_tuners_on_adapter(adapter_filepath)
+        except:
+            logging.exception("Could not retrieve tuners for [%s]." %
+                              (adapter_filepath))
+            raise
+
+        try:
+            sn = self.__build_sn(device_sets, adapter_filepath)
+        except:
+            logging.exception("Could not build SN for device [%s]." %
+                              (adapter_filepath))
+            raise
+
+        try:
+            device = DriverDvbChar.__build_device(self,
+                                                     adapter_filepath,
+                                                     adapter_index,
+                                                     sn,
+                                                     device_sets)
+        except:
+            logging.exception("Could not build device for adapter [%s] "
+                              "during enumeration." % (adapter_filepath))
+            raise
+
+        return device
 
     def enumerate_devices(self):
         """List available devices."""
@@ -357,43 +402,19 @@ class DriverDeviceFile(ITunerDriver):
             raise
 
         devices = []
-        for adapter in adapters:
-            (adapter_filepath, adapter_index) = adapter
+        for adapter_filepath in adapters:
+            device = self.build_from_id(_encode_adapter_filepath_to_id(adapter_filepath))
 
 # If the SN has been given, check it against what we can calculate, here, and
 # tell the system to ignore the device if the SNs don't match (the device is
 # not present).
-            try:
-                device_sets = self.__get_tuners_on_adapter(adapter_filepath)
-            except:
-                logging.exception("Could not retrieve tuners for [%s]." % 
-                                  (adapter_filepath))
-                raise
-
-            try:
-                sn = self.__build_sn(device_sets, adapter_filepath)
-            except:
-                logging.exception("Could not build SN for device [%s]." % 
-                                  (adapter_filepath))
-                raise
-
-            try:
-                device = DriverDeviceFile.__build_device(self, 
-                                                         adapter_filepath, 
-                                                         adapter_index,
-                                                         sn, 
-                                                         device_sets)
-            except:
-                logging.exception("Could not build device for adapter [%s] "
-                                  "during enumeration." % (adapter_filepath))
-                raise
 
             devices.append(device)
 
         return devices
 
     @staticmethod
-    def __build_device(driver, adapter, adapter_index, sn, device_sets, 
+    def __build_device(driver, adapter, adapter_index, sn, device_sets,
                        channellist=None, atsc_type=None):
         """Some of these parameters really can't be omitted. However, if we're
         enumerating devices, the users won't be able to select values for them
@@ -403,14 +424,13 @@ class DriverDeviceFile(ITunerDriver):
         logging.debug("Building device object for adapter [%s]." % (adapter))
 
         try:
-            return DeviceFileDevice(driver, 
-                                     adapter,
-                                     adapter_index,
-                                     device_sets,
-                                     sn,
-                                     channellist,
-                                     atsc_type
-                                    )
+            return DeviceDvbChar(driver,
+                                 adapter,
+                                 adapter_index,
+                                 device_sets,
+                                 sn,
+                                 channellist,
+                                 atsc_type)
         except:
             logging.exception("Could not build device for device-path "
                               "[%s]." % (adapter))
@@ -423,30 +443,30 @@ class DriverDeviceFile(ITunerDriver):
             file_prefix = 'dvr'
         elif _type == DEVICE_FRONTEND:
             file_prefix = 'frontend'
-    
+
         return ("%s/%s%d" % (adapter_filepath, file_prefix, index))
 
     def __build_sn(self, device_sets, adapter):
         """Build the SN for the device from the SNs from each of the tuners,
         represented by their individual dvr<n> devices.
         """
-    
+
         serials = ''
         for device_set in device_sets:
             tuner_file_path = self.__build_device_filepath(
-                                adapter, 
-                                device_set[DEVICE_DVR], 
+                                adapter,
+                                device_set[DEVICE_DVR],
                                 DEVICE_DVR)
-        
+
             s = stat(tuner_file_path)
             dev_id_string = ('%s:%s' % (major(s.st_rdev), minor(s.st_rdev)))
             device_info_root = ('/sys/dev/char/%s' % (dev_id_string))
             sn_filepath = ('%s/device/serial' % (device_info_root))
-            
+
 #            logging.debug("Device info root is [%s]." % (device_info_root))
-            
+
             if not isfile(sn_filepath):
-                message = ('Can not find serial at [%s] for tuner [%s].' % 
+                message = ('Can not find serial at [%s] for tuner [%s].' %
                            (sn_filepath, tuner_file_path))
 
                 logging.error(message)
@@ -457,14 +477,14 @@ class DriverDeviceFile(ITunerDriver):
                     sn = f.read()
             except:
                 message = ("Could not read SN from [%s]." % (sn_filepath))
-                
+
                 logging.error(message)
                 raise
 
 #            logging.debug("Tuner [%s] SN: %s" % (tuner_file_path, sn))
 
             serials += sn
-    
+
         return sha.new(serials).hexdigest()
 
     @staticmethod
@@ -504,17 +524,17 @@ class DriverDeviceFile(ITunerDriver):
             try:
                 channellist = channel_storage.get_channellist(channellist)
             except:
-                logging.exception("Could not restore DriverDeviceFile device with "
+                logging.exception("Could not restore DriverDvbChar device with "
                                   "broken channel-list: %s" % (data))
                 raise
 
-        driver = DriverDeviceFile()
+        driver = DriverDvbChar()
 
         try:
-            device = DriverDeviceFile.__build_device(driver,
-                                                     data['Adapter'], 
-                                                     data['AdapterIndex'], 
-                                                     data['Sn'], 
+            device = DriverDvbChar.__build_device(driver,
+                                                     data['Adapter'],
+                                                     data['AdapterIndex'],
+                                                     data['Sn'],
                                                      data['DeviceSets'],
                                                      channellist,
                                                      data['AtscType'])
@@ -524,21 +544,21 @@ class DriverDeviceFile(ITunerDriver):
             raise
 
         return device
-            
+
     def is_available(self, device):
         """Check if the given device is still available."""
 
         adapter_path = device.junk_data['Adapter']
         if not exists(adapter_path):
-            logging.info("Device with adapter [%s] was not found." % 
+            logging.info("Device with adapter [%s] was not found." %
                          (adapter_path))
             return False
 
         try:
             # Verify that it's the same device.
-         
+
             try:
-                sn_recalc = self.__build_sn(device.junk_data['DeviceSets'], 
+                sn_recalc = self.__build_sn(device.junk_data['DeviceSets'],
                                             device.address)
             except:
                 logging.exception("Could not calculate SN for loaded device.")
@@ -548,11 +568,11 @@ class DriverDeviceFile(ITunerDriver):
                 return False
         except:
             logging.exception("Can not determine availability of device [%s]. "
-                              "Indicating as unavailable." % 
+                              "Indicating as unavailable." %
                               (device.identifier))
             return False
 
-        logging.debug("Device [%s] has been verified to be available." % 
+        logging.debug("Device [%s] has been verified to be available." %
                       (device.identifier))
 
         return True
@@ -568,30 +588,30 @@ class DriverDeviceFile(ITunerDriver):
         raise NotImplementedError()
 
     def capture_to_file(self, tuner, writer):
-        """Start streaming the feed. It is expected that the writer spawns a 
+        """Start streaming the feed. It is expected that the writer spawns a
         thread and returns immediately.
         """
 
-        logging.info("Sending feed from tuner [%s] to writer [%s]." % (tuner, 
+        logging.info("Sending feed from tuner [%s] to writer [%s]." % (tuner,
                                                                        writer))
 
         device = tuner.device
         tuner_index = tuner.tuner_index
         adapter_filepath = device.junk_data['Adapter']
 
-        dvr_filepath = self.__build_device_filepath(adapter_filepath, 
-                                                    tuner_index, 
+        dvr_filepath = self.__build_device_filepath(adapter_filepath,
+                                                    tuner_index,
                                                     DEVICE_DVR)
 
         try:
             return writer.fill_from_device_file(dvr_filepath)
         except:
-            logging.exception("Could not capture to file [%s]." % 
+            logging.exception("Could not capture to file [%s]." %
                               (dvr_filepath))
             raise
 
     def check_tuning_status(self, tuner):
-        """Return a 2-tuple of a boolean indicating if the tuning is still 
+        """Return a 2-tuple of a boolean indicating if the tuning is still
         active, and the last state, if True.
         """
 
@@ -622,7 +642,7 @@ class DriverDeviceFile(ITunerDriver):
         def set_last_state(state):
             self.__tuned[state_key][2] = state
 
-            logging.info("Tuning on [%s] has changed state to [%s]." % 
+            logging.info("Tuning on [%s] has changed state to [%s]." %
                          (tuner, state))
 
             if state == TS_1_INITIAL:
@@ -641,7 +661,7 @@ class DriverDeviceFile(ITunerDriver):
                 tuner_mgmt.post_tuner_activity(tuner, tuner_activity_type)
             except:
                 logging.exception("There was an exception while posting "
-                                  "tuning-state [%s] for tuner [%s]." % 
+                                  "tuning-state [%s] for tuner [%s]." %
                                   (state, tuner))
 
         def get_last_state():
@@ -660,7 +680,7 @@ class DriverDeviceFile(ITunerDriver):
 
             # A terminal state due to an error.
             if msg_type == MT_ERROR:
-                logging.error("There was an error while tuning on [%s]: %s" % 
+                logging.error("There was an error while tuning on [%s]: %s" %
                               (tuner, data))
                 continue
 
@@ -668,7 +688,7 @@ class DriverDeviceFile(ITunerDriver):
             elif msg_type == MT_CANCELLED:
                 set_last_state(TS_4_CANCELLED)
 
-                logging.info("Tuning on [%s] has reported being done." % 
+                logging.info("Tuning on [%s] has reported being done." %
                              (tuner))
 
                 return (False, None)
@@ -677,12 +697,12 @@ class DriverDeviceFile(ITunerDriver):
             elif msg_type != MT_STATUS:
                 continue
 
-            # If we just started and we're now seeing the status lines, 
+            # If we just started and we're now seeing the status lines,
             # indicate that we're trying to lock the program.
             if last_state == TS_1_INITIAL:
                 set_last_state(TS_2_TRYING)
 
-            # If we've stated that we're trying to lock the program and we 
+            # If we've stated that we're trying to lock the program and we
             # -actually have- locked the program.
 
             elif last_state == TS_2_TRYING:
@@ -692,15 +712,15 @@ class DriverDeviceFile(ITunerDriver):
 
                 if is_locked:
                     set_last_state(TS_3_LOCKED)
-                    
+
         return (True, get_last_state())
 
     def set_vchannel(self, tuner, vchannel_scalar=None):
-        """Set the vchannel on the given tuner to the given scalar. If not 
+        """Set the vchannel on the given tuner to the given scalar. If not
         given, clear state of the tuner.
         """
 
-        logging.info("Tuning v-channel (%s) using tuner [%s] on device [%s]." % 
+        logging.info("Tuning v-channel (%s) using tuner [%s] on device [%s]." %
                      (vchannel_scalar, tuner, tuner.device))
 
         key = (tuner.device.identifier, tuner.tuner_index)
@@ -712,17 +732,17 @@ class DriverDeviceFile(ITunerDriver):
             try:
                 tune.cancel()
             except Exception as e:
-                logging.exception("Could not cancel tune on [%s]: %s" % 
+                logging.exception("Could not cancel tune on [%s]: %s" %
                                   (tuner, e))
                 raise
-                
+
             del self.__tuned[key]
 
         tuner.vchannel = vchannel_scalar
 
         if vchannel_scalar != None:
             queue = multiprocessing.Queue()
-            tune = _TuneChannel(tuner, 
+            tune = _TuneChannel(tuner,
                                 queue
                                )
 
@@ -733,7 +753,7 @@ class DriverDeviceFile(ITunerDriver):
 # TODO: Make sure that the check_tuning_status() calls correctly determine the current state of the tuning process.
 # TODO: Emit status standardized tuning-status messages.
 
-            logging.info("Channel (%d) successfully tuned in separate thread." % 
+            logging.info("Channel (%d) successfully tuned in separate thread." %
                          (tuner.vchannel))
         else:
             logging.info("Tuner-state cleared.")
@@ -754,7 +774,7 @@ class DriverDeviceFile(ITunerDriver):
             if is_esc or is_button(button, B_CANCEL):
                 raise GotoPanelException('pick_driver')
 
-            type_mapping = { 
+            type_mapping = {
                     B_ADAPTER_TYPE_ATSC: constants.ADAPTER_TYPE_ATSC,
                     B_ADAPTER_TYPE_DVBT: constants.ADAPTER_TYPE_DVBT,
                     B_ADAPTER_TYPE_DVBC: constants.ADAPTER_TYPE_DVBC,
@@ -790,12 +810,12 @@ class DriverDeviceFile(ITunerDriver):
             """Receive the results from the driver-specific config panels. Set
             the information on the device that required user input.
             """
-        
+
 #            (tuning_info_results, atsc_type_results) = flat_results
             (atsc_type_results,) = flat_results
-            
+
             atsc_type_button = atsc_type_results['button']
-        
+
             if is_button(atsc_type_button, B_ADAPTER_TYPE_ATSC):
                 atsc_type = constants.ADAPTER_TYPE_ATSC
             elif is_button(atsc_type_button, B_ADAPTER_TYPE_DVBT):
@@ -807,23 +827,23 @@ class DriverDeviceFile(ITunerDriver):
             else:
                 raise Exception("Could not map selected button [%s] to a ATSC "
                                 "type." % (atsc_type_button))
-        
+
             device.atsc_type             = atsc_type
-        
+
 #        panels = [tuning_info_panel, atsc_type_panel]
         panels = [atsc_type_panel]
         return (panels, atsc_type_panel, atsc_type_panel, posthook)
 
     def generate_panels(self, panel_name_generator, notice_box, for_device):
-        """If this driver needs specific global configuration settings in order 
-        to tune or whatnot, return a list of additional panels. If any 
+        """If this driver needs specific global configuration settings in order
+        to tune or whatnot, return a list of additional panels. If any
         panel expressions do not have a '_next' component, it will be defaulted
         to whatever 'return_to_panel' is, above. Any data that is to be stored
         should be set on persisted_data (a dictionary).
         """
 
         try:
-            result = self.__build_panels(panel_name_generator, notice_box, 
+            result = self.__build_panels(panel_name_generator, notice_box,
                                          for_device)
         except:
             logging.exception("Could not build configuration panels.")
@@ -852,7 +872,7 @@ class DriverDeviceFile(ITunerDriver):
                               if fnmatch(filename, 'adapter*') \
                             ]
         except:
-            logging.exception("Could not scan for devices in [%s]." % 
+            logging.exception("Could not scan for devices in [%s]." %
                               (dev_path))
             raise
 
@@ -862,10 +882,9 @@ class DriverDeviceFile(ITunerDriver):
             result = adapter_rx.match(filename)
             if result:
                 adapter_filepath = ("%s/%s" % (dev_path, filename))
-                adapter_index = int(result.group(1))
-                adapters.append((adapter_filepath, adapter_index))
+                adapters.append(adapter_filepath)
 
-        logging.info("(%d) device(s) found in [%s]." % 
+        logging.info("(%d) device(s) found in [%s]." %
                      (len(adapters), dev_path))
 
         return adapters
@@ -877,12 +896,12 @@ class DriverDeviceFile(ITunerDriver):
              [0, 0, 0], #demux, dvr, frontend
              [1, 1, 1], #demux, dvr, frontend
             ]
-             
-        where each sublist represents the constituent devices for each tuner 
+
+        where each sublist represents the constituent devices for each tuner
         built into the device.
-        
-        We rely on the enumerate_devices() call to find real devices, and the 
-        deserialize routine to check if the device is still available, which 
+
+        We rely on the enumerate_devices() call to find real devices, and the
+        deserialize routine to check if the device is still available, which
         will make sure the SN matches.
         """
 
@@ -890,7 +909,12 @@ class DriverDeviceFile(ITunerDriver):
         dvr_rx      = re.compile('^dvr([0-9]+)$')
         frontend_rx = re.compile('^frontend([0-9]+)$')
 
-        constituents = listdir(adapter)
+        try:
+            constituents = listdir(adapter)
+        except OSError:
+            raise DeviceDoesNotExist("Adapter path [%s] may no longer exist." % 
+                                     (adapter))
+            
         device_matrix = []
 
         for filename in constituents:
@@ -932,16 +956,16 @@ class DriverDeviceFile(ITunerDriver):
                 if not device:
                     okay = False
                     break
-            
+
             if okay:
-                # There's no way we can get here without having all three 
-                # devices having the same index. Just add the same index three 
+                # There's no way we can get here without having all three
+                # devices having the same index. Just add the same index three
                 # times to build the device_set.
                 device_sets.append([index, index, index])
 
             index += 1
 
-        logging.info("(%d) tuner(s) found on adapter [%s]." % 
+        logging.info("(%d) tuner(s) found on adapter [%s]." %
                      (len(device_sets), adapter))
 
         return device_sets
@@ -949,16 +973,16 @@ class DriverDeviceFile(ITunerDriver):
     @property
     def name(self):
         """Returns a nice, human-readable name for this driver."""
-        
-        return 'RawDevice'
+
+        return 'DvbCharDevice'
 
     @property
     def description(self):
         """Returns a string that describes the type of device that we handle.
         """
-        
-        return "Read from a /dev/dvb/adapter<n> device using a channels.conf" \
-               " file."
+
+        return "Read from a /dev/dvb/adapter<n> device using channels.conf " \
+               "data passed via parameters."
 
     @property
     def transport_info(self):
@@ -980,16 +1004,16 @@ class DriverDeviceFile(ITunerDriver):
 #                            },                          \
 #                            { 3: subtitle_info }        \
 #                           )
-#        
+#
 #        return container_name
 
     @property
     def supports_channelscan(self):
-        """Returns a boolean expressing whether a channel-scan is both 
+        """Returns a boolean expressing whether a channel-scan is both
         supported and required. A driver that doesn't support a manual channel-
-        scan must have some other method of determining channels, such as 
+        scan must have some other method of determining channels, such as
         having been given a channels.conf file.
         """
-        
+
         return False
 

@@ -1,10 +1,10 @@
 import json
 
-from rain_config import values
+#from rain_config import values
 
-from rain.common.interfaces.idictable import IDictable
-from rain.common.interfaces.iserializable import ISerializable
-from rain.common.modules import cf
+from interfaces.idictable import IDictable
+from interfaces.iserializable import ISerializable
+#from rain.common.modules import cf
 
 from logging import getLogger
 logging = getLogger(__name__)
@@ -19,7 +19,7 @@ class TunerInfo(IDictable):
         self.__unique_id   = id(self)
 
     def __str__(self):
-        return ('[%s]-%d @(%s)' % (self.device.identifier, self.tuner_index, 
+        return ('[%s]-%d @(%s)' % (self.device.identifier, self.tuner_index,
                                    self.vchannel))
 
     def easy_capture_to_file(self, file_path, quality):
@@ -37,7 +37,7 @@ class TunerInfo(IDictable):
         try:
             return self.device.driver.set_vchannel(self, vchannel_scalar)
         except:
-            logging.exception("Could not set vchannel to (%s)." % 
+            logging.exception("Could not set vchannel to (%s)." %
                               (vchannel_scalar))
             raise
 
@@ -49,7 +49,7 @@ class TunerInfo(IDictable):
                  'TunerIndex':  obj.__tuner_index,
                  'VChannel':    obj.__vchannel,
                  'UniqueId':    obj.__unique_id }
-    
+
     @staticmethod
     def convert_from_dict(data):
         """Restore an object from a dictionary."""
@@ -63,37 +63,50 @@ class TunerInfo(IDictable):
         try:
             device = device_storage.retrieve_by_name(data['DeviceIdent'])
         except:
-            logging.exception("Could not restore device [%s]." % 
+            logging.exception("Could not restore device [%s]." %
                               (data['DeviceIdent']))
             raise
 
         tuner_info = TunerInfo(device, data['TunerIndex'])
-        
+
         tuner_info.__vchannel  = data['VChannel']
         tuner_info.__unique_id = data['UniqueId']
-    
+
         return tuner_info
 
     @staticmethod
     def serialize(obj):
         """Reduce the given object to a string."""
 
-        return json.dumps(TunerInfo.convert_to_dict(obj))
-    
+        data = TunerInfo.convert_to_dict(obj)
+        return ('%s:%s:%s:%s' % (data['DeviceIdent'], 
+                                 data['TunerIndex'], 
+                                 data['VChannel'] if data['VChannel'] \
+                                                    is not None \
+                                                  else '', 
+                                 data['UniqueId']))
+
     @staticmethod
     def unserialize(data):
         """Restore an object from a string."""
 
-        return TunerInfo.convert_from_dict(json.loads(data))
+        (device_ident, tuner_index, vchannel, unique_id) = data.split(':')[0:4]
+
+        data = { 'DeviceIdent': device_ident,
+                 'TunerIndex':  int(tuner_index),
+                 'VChannel':    int(vchannel) if vchannel else None,
+                 'UniqueId':    unique_id }
+
+        return TunerInfo.convert_from_dict(data)
 
     @property
     def unique_id(self):
         return self.__unique_id
-    
+
     @property
     def device(self):
         return self.__device
-    
+
     @property
     def tuner_index(self):
         return self.__tuner_index

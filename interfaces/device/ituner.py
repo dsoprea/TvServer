@@ -14,17 +14,17 @@ TUNER_ACTIVITY_TYPES = [ A_TUNER_INITIAL,
 
 class ITuner(object):
 
-    def get_default_tuner_index(self, device):
-        """When a tuner is required, start with the index that we return."""
+#    def get_default_tuner_index(self, device):
+#        """When a tuner is required, start with the index that we return."""
+#
+#        raise NotImplementedError()
         
-        raise NotImplementedError()
-        
-    def get_next_tuner_index(self, device, current_index):
-        """When another tuner is required, return the next one to be 
-        used/attempted.
-        """
-
-        raise NotImplementedError()
+#    def get_next_tuner_index(self, device, current_index):
+#        """When another tuner is required, return the next one to be 
+#        used/attempted.
+#        """
+#
+#        raise NotImplementedError()
 
     def update_tuners(self):
         """Notify The tuner class that there has been a tuner-related

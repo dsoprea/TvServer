@@ -31,22 +31,43 @@ class HandlerBase(object):
 
         return BadRequest()
 
-    def json_response(self, data):
-        print(data)
-        
+    def json_response(self, data=None):
         header('Content-Type', 'application/json')
-        return json.dumps(data)
+        return json.dumps({ 'Error': None, 'Data': data })
+
+    def json_error(self, message, error_type_name, data=None):
+        header('Content-Type', 'application/json')
+        return json.dumps({ 'Error': error_type_name,
+                            'Message': message, 
+                            'Data': data })
 
 
 class GetHandler(HandlerBase):
+    def __init__(self, returns_json=True):
+        self.__returns_json = returns_json
+    
     def GET(self, method, ignore_me=None, parameters_raw=None):
         parameters = split_parameters(parameters_raw)
 
-        return getattr(self, method)(**parameters)
-
+        try:
+            response = getattr(self, method)(**parameters)
+        except Exception as e:
+            message = str(e)
+            return self.json_error(message, e.__class__.__name__) \
+                    if self.__returns_json \
+                    else message
+        else:
+            return self.json_response(response)
 
 class Fail(HandlerBase):
     """Receives all requests to bad URLs."""
 
     pass
 
+def encode_fq_device_id(driver_class_name, device_id):
+    return ('%s:%s' % (driver_class_name, device_id))
+
+def decode_fq_device_id(fq_device_id):
+    pivot = fq_device_id.index(':')
+    return (fq_device_id[:pivot], fq_device_id[pivot + 1:])
+    

@@ -10,7 +10,8 @@ class ITunerDevice(object):
 
     @property
     def identifier(self):
-        """Return a unique identifer for this device."""
+        """Return a unique identifer for this device. It must embed any 
+        information necessary to reconstitute the device."""
     
         raise NotImplementedError()
         

@@ -23,8 +23,8 @@ def parse_channels_conf(file_path):
     key_column = 'ProgramId'
 
     try:
-        return aggregate_from_data_file_with_key(file_path, columns, 
-                                                 key_column, validate, 
+        return aggregate_from_data_file_with_key(file_path, columns,
+                                                 key_column, validate,
                                                  separator=':')
     except:
         logging.exception("Channels data parse error.")

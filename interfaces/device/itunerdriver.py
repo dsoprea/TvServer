@@ -9,6 +9,13 @@ class ITunerDriver(IDictable):#, IPanelSource):
 
         raise NotImplementedError()
 
+    def build_from_id(self, id_):
+        """Build a device given its ID. The ID should implement everything we 
+        need to reconstitute.
+        """
+    
+        raise NotImplementedError()
+        
     def is_available(self, device):
         """Check if the given device is still available."""
     
