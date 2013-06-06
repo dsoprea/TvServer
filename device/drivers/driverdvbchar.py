@@ -5,7 +5,6 @@ import multiprocessing
 import Queue
 
 from hashlib import sha1
-
 from json import loads, dumps
 from os.path import expanduser, isfile, isdir, dirname, exists, basename
 from os import listdir, stat, minor, major, environ, kill
@@ -101,7 +100,7 @@ class DeviceDvbChar(TunerDeviceCommon, ITunerDevice):
     def identifier(self):
         """Return an adapter-filepath."""
 
-        return _encode_adapter_filepath_to_id(self.address)
+        return self.address
 
     @property
     def address(self):

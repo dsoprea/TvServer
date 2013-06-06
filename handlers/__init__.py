@@ -64,10 +64,4 @@ class Fail(HandlerBase):
 
     pass
 
-def encode_fq_device_id(driver_class_name, device_id):
-    return ('%s:%s' % (driver_class_name, device_id))
-
-def decode_fq_device_id(fq_device_id):
-    pivot = fq_device_id.index(':')
-    return (fq_device_id[:pivot], fq_device_id[pivot + 1:])
     

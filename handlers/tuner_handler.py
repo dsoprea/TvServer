@@ -1,39 +1,44 @@
-from handlers import GetHandler, decode_fq_device_id, encode_fq_device_id
-from device.drivers import available_drivers
+import logging
+
+from handlers import GetHandler
+from device.drivers import available_drivers, get_device_from_big_id, \
+                           get_big_id_from_device
 from device.tuner import Tuner
 from device.tuner_info import TunerInfo
 from device import NoTunersAvailable
+from big_id import BigId
 
 _tuner = Tuner()
 
 
 class TunerHandler(GetHandler):
-    def acquire(self, did):
+    def acquire(self, bdid):
         """Acquire exclusive access to a tuner, prior to tuning.
         
-        did: Fully-qualified device-ID.
+        bdid: Device BigID.
         """
 
         try:
-            (driver_class_name, device_id) = decode_fq_device_id(did)
-            driver = available_drivers[driver_class_name][0]
-            device = driver().build_from_id(device_id)
+            device = get_device_from_big_id(BigId(bdid))
     
             tuner = _tuner.request_tuner(specific_device=device)
             if tuner is None:
                 raise NoTunersAvailable("No tuners are available on device "
-                                        "[%s]." % (did))
+                                        "[%s]." % (bdid))
             
-            return TunerInfo.serialize(tuner)
+            return { 'tid': tuner.identifier }
         except NoTunersAvailable:
             raise
         except:
-            raise Exception("There was an error while tuning on [%s]." % (did))
+            message = ("There was an error while tuning on [%s]." % (bdid))
 
-    def tune(self, tuner, name, freq, mod, vid, aid, pid):
+            logging.exception(message)
+            raise Exception(message)
+
+    def tune(self, tid, name, freq, mod, vid, aid, pid):
         """Tune a channel.
 
-        did: Device ID.
+        tid: Tuner ID.
         name: Name of channel.
         freq: Frequency of channel.
         mod: Modulation of channel.
@@ -42,28 +47,38 @@ class TunerHandler(GetHandler):
         pid: ProgramID
         """
 
-        tuner = TunerInfo.unserialize(tuner)
+        try:
+            tuner = TunerInfo.build_from_id(tid)
 
         #tuner.easy_set_vchannel
+        except:
+            message = "Error while trying to tune."
+            
+            logging.exception(message)
+            raise Exception(message)
 
     def status(self):
-        response = {}
-        for tuner in _tuner.get_statuses().keys():
-            device = tuner.device
-            driver = device.driver
-            
-            driver_class_name = driver.__class__.__name__
-            if driver_class_name not in response:
-                response[driver_class_name] = {}
-            
-            fq_device_id = encode_fq_device_id(driver_class_name, 
-                                               device.identifier)
+        try:
+            response = {}
+            for tuner in _tuner.get_statuses().keys():
+                device = tuner.device
+                driver = device.driver
+                
+                driver_class_name = driver.__class__.__name__
+                if driver_class_name not in response:
+                    response[driver_class_name] = {}
+                
+                device_big_id_str = str(get_big_id_from_device(device))
+                tuner_id = tuner.identifier
+    
+                if device_big_id_str not in response[driver_class_name]:
+                    response[driver_class_name][device_big_id_str] = [tuner_id]
+                else:
+                    response[driver_class_name][device_big_id_str].append(tuner_id)
+    
+            return response
+        except:
+            message = "Error while trying to find tuning statuses."
 
-            tuner_id = TunerInfo.serialize(tuner)
-
-            if fq_device_id not in response[driver_class_name]:
-                response[driver_class_name][fq_device_id] = [tuner_id]
-            else:
-                response[driver_class_name][fq_device_id].append(tuner_id)
-
-        return response
+            logging.exception(message)
+            raise Exception(message)

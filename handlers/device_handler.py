@@ -1,5 +1,7 @@
-from handlers import GetHandler, encode_fq_device_id
-from device.drivers import available_drivers
+import logging
+
+from handlers import GetHandler
+from device.drivers import available_drivers, get_big_id_from_device
 from cache import Cache
 
 
@@ -20,12 +22,15 @@ class DeviceHandler(GetHandler):
                                 'tuner_quantity': device.tuner_quantity, \
                                 'adapter_index': device.adapter_index }
     
-                fq_device_id = encode_fq_device_id(dcn, device.identifier)
-                devices[fq_device_id] = device_info
+                big_device_id = get_big_id_from_device(device)
+                devices[str(big_device_id)] = device_info
     
-            Cache().set(str("tv-drivers-%s-devices" % (dcn)), devices, 3600)
+#            Cache().set(str("tv-drivers-%s-devices" % (dcn)), devices, 3600)
         except:
-            raise Exception("There was an error while trying to list devices "
-                            "for driver [%s]." % (dcn))
+            message = ("There was an error while trying to list devices for "
+                       "driver [%s]." % (dcn))
+
+            logging.exception(message)
+            raise Exception(message)
 
         return devices
