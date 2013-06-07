@@ -1,6 +1,11 @@
 from interfaces.idictable import IDictable
 #from rain.dvr.ui.interfaces.ipanelsource import IPanelSource
 
+# "Tune-Data Type"
+TD_TYPE_VCHANNEL = 'vchannel'
+TD_TYPE_CHANNELSCONF = 'channelsconf'
+
+
 class ITunerDriver(IDictable):#, IPanelSource):
     """Represents an interface to a particular class of TV tuner."""
 
@@ -46,8 +51,9 @@ class ITunerDriver(IDictable):#, IPanelSource):
     
         raise NotImplementedError()
 
-    def set_vchannel(self, tuner, vchannel_scalar=None):
-        """Set the vchannel on the given tuner to the given scalar."""
+    def tune(self, tuner, param=None):
+        """Set the vchannel on the given tuner with the given parameter, which
+        depends on the value of tuner_data_type."""
     
         raise NotImplementedError()
 
@@ -85,3 +91,8 @@ class ITunerDriver(IDictable):#, IPanelSource):
         
         raise NotImplementedError()
 
+    @property
+    def tuner_data_type(self):
+        """Returns one of the TD_TYPE_* values (above)."""
+
+        raise NotImplementedError()

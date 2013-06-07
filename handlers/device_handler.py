@@ -1,8 +1,8 @@
 import logging
 
-from handlers import GetHandler
+from handlers import GetHandler, RequestError
 from device.drivers import available_drivers, get_big_id_from_device
-from cache import Cache
+#from cache import Cache
 
 
 class DeviceHandler(GetHandler):
@@ -23,9 +23,11 @@ class DeviceHandler(GetHandler):
                                 'adapter_index': device.adapter_index }
     
                 big_device_id = get_big_id_from_device(device)
-                devices[str(big_device_id)] = device_info
+                devices[repr(big_device_id)] = device_info
     
 #            Cache().set(str("tv-drivers-%s-devices" % (dcn)), devices, 3600)
+        except RequestError:
+            raise
         except:
             message = ("There was an error while trying to list devices for "
                        "driver [%s]." % (dcn))

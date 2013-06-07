@@ -13,11 +13,12 @@ class BigId(object):
         self.__stack = []
 
         if flat_big_id is not None:
+            flat_big_id = str(flat_big_id)
             while flat_big_id != '':
                 matched = re.match('^[^=]+=+', flat_big_id)
                 
                 # We'll always end with an extra '='. Clip it.
-                encoded_id = str(matched.group(0))[:-1]
+                encoded_id = matched.group(0)[:-1]
 
                 flat_big_id = flat_big_id[len(encoded_id) + 1:]
 
@@ -46,5 +47,5 @@ class BigId(object):
         encoded = self.__stack.pop()
         return urlsafe_b64decode(encoded)
 
-    def __str__(self):
+    def __repr__(self):
         return ''.join(self.__stack)

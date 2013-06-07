@@ -12,3 +12,7 @@ class DeviceDoesNotExist(DeviceException):
 
 class NoTunersAvailable(DeviceException):
     pass
+
+class TunerNotAllocated(DeviceException):
+    pass
+

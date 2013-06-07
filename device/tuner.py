@@ -53,13 +53,14 @@ class Tuner(ITuner):
                     for tuner_index in xrange(len(tuner_allocations)):
 
                         # If the tuner is currently allocated, release it.
-                        if tuner_allocations[tuner_index][0]:
+                        if tuner_allocations[tuner_index][0] is not None:
                             try:
                                 self.release_tuner(device, tuner_index)
                             except:
                                 logging.exception("There was an error while "
-                                                  "deregistering tuner-index (%d) "
-                                                  "on stale device [%s]." % 
+                                                  "deregistering tuner-index "
+                                                  "(%d) on stale device "
+                                                  "[%s]." %
                                                   (tuner_index, device))
                                 raise
 
@@ -68,13 +69,13 @@ class Tuner(ITuner):
 
             # Add new devices.
             if with_device is not None and \
-               with_device not in self.__allocations.keys():
-                # For each device, allow for allocation-data (set when 
-                # allocated), along with a list of event listeners.
+               with_device not in self.__allocations:
+                # For each device, allow for tuner-info (set when allocated), 
+                # allocation-data, along with a list of event listeners.
 # TODO: Add a hash function to the device and driver classes.
                 self.__allocations[with_device] = []
                 for tuner_index in xrange(with_device.tuner_quantity):
-                    self.__allocations[with_device].append([None, []])
+                    self.__allocations[with_device].append([None, None, []])
 
     def __get_default_tuner_index(self, device):
         """When a tuner is required, start with the index that we return."""
@@ -118,11 +119,12 @@ class Tuner(ITuner):
         with Tuner.tuner_locker:
             if specific_tuner:
                 entry = self.__get_allocations_entry(specific_tuner)
-
+# TODO: This will not exist unless someone tries to tune it, first (and the
+#       update call is made).
                 if not entry:
                     return False
 
-                entry[1].append(update_cb)
+                entry[2].append(update_cb)
 
             else:
                 self.__global_listeners.append(update_cb)
@@ -139,10 +141,10 @@ class Tuner(ITuner):
                 if not entry:
                     return False
 
-                if update_cb not in entry[1]:
+                if update_cb not in entry[2]:
                     return False
 
-                entry[1].remove(update_cb)
+                entry[2].remove(update_cb)
 
             else:
                 if update_cb not in self.__global_listeners:
@@ -157,7 +159,7 @@ class Tuner(ITuner):
         with Tuner.tuner_locker:
             if specific_tuner:
                 entry = self.__get_allocations_entry(specific_tuner)
-                listeners = entry[1] + self.__global_listeners
+                listeners = entry[2] + self.__global_listeners
             else:
                 listeners = self.__global_listeners
 
@@ -252,12 +254,9 @@ class Tuner(ITuner):
                 
                 if elected != None:
                 
-                    # allocation_data must not evaluate to False.
-                    if allocation_data == None:
-                        allocation_data = (None,)
-
-                    self.__allocations[device][elected][0] = allocation_data
                     specific_tuner = TunerInfo(device, elected)
+                    self.__allocations[device][elected][0:2] = \
+                        [specific_tuner, allocation_data]
 
                     try:
                         self.__touch_listeners(A_ALLOCATED, specific_tuner, \
@@ -289,9 +288,9 @@ class Tuner(ITuner):
         if not entry:
             return False
 
-        (allocation_data, _) = entry
+        (tuner_info, allocation_data, _) = entry
 
-        if allocation_data == None:
+        if tuner_info == None:
             return False
 
         try:
@@ -313,9 +312,9 @@ class Tuner(ITuner):
             if not entry:
                 return False
 
-            (allocation_data, _) = entry
+            (tuner_info, allocation_data, _) = entry
 
-            if allocation_data == None:
+            if tuner_info is None:
                 return False
 
             # Clear allocation.
@@ -331,6 +330,16 @@ class Tuner(ITuner):
                                    specific_tuner.device))
                 raise
 
+    def get_status(self, device, tuner_index):
+        """Return a boolean indicating whether a tuner is allocated."""
+        
+        try:
+            return self.__allocations[device][tuner_index] is not None
+        except:
+            # We no longer know about this device, or a difference device has,
+            # somehow, replaced the other one, and it has less tuners.
+            return False
+
     def get_statuses(self):
         """Get a list of two-tuples and the allocation-data assigned to 
         allocated tuners.
@@ -338,9 +347,16 @@ class Tuner(ITuner):
     
         statuses = {}
         for device, tuner_allocation in self.__allocations.iteritems():
-            for tuner_index in xrange(len(tuner_allocation)):
-                specific_tuner = TunerInfo(device, tuner_index)
-                statuses[specific_tuner] = tuner_allocation[tuner_index]
+            device_statuses = []
+            for tuner_allocation_info in tuner_allocation:
+                if tuner_allocation_info[0] is None:
+                    continue
+
+                device_statuses[tuner_allocation_info[0]].\
+                    append(tuner_allocation_info[0])
+
+            if device_statuses:
+                statuses[device.identifier] = device_statuses
 
         return statuses
 

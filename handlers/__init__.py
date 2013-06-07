@@ -3,6 +3,10 @@ import json
 from web.webapi import BadRequest
 from web import header
 
+
+class RequestError(Exception):
+    pass
+
 def split_parameters(raw_string):
     if not raw_string:
         return {}
@@ -58,6 +62,7 @@ class GetHandler(HandlerBase):
                     else message
         else:
             return self.json_response(response)
+
 
 class Fail(HandlerBase):
     """Receives all requests to bad URLs."""

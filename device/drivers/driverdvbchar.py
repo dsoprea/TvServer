@@ -13,19 +13,21 @@ from platform import system
 from signal import SIGALRM
 
 from pyzap.calls import c_azap_tune_silent
-from pyzap.types import *
+from pyzap.types import TUNER_DESCRIPTOR, ATSC_TUNE_INFO, STATUS_RECEIVER_CB
 from pyzap.constants import modulation
 
 #from rain_config import constants, values, channel_config, \
 #                                routine_close_priority
 
-from interfaces.device.itunerdriver import ITunerDriver
+from interfaces.device.itunerdriver import ITunerDriver, TD_TYPE_CHANNELSCONF
 from interfaces.device.itunerdevice import ITunerDevice
 from interfaces.device.ituner import *
 from device.device_network_attached import DeviceNetworkAttached
 from device.tuner_device_common import TunerDeviceCommon
 from device import DriverRequirementsError, DriverConfigurationError, \
                    DeviceDoesNotExist
+
+from managed_routine import ManagedRoutine
 
 #from mediaconsole.modules.media.container_info import ContainerInfo
 #from mediaconsole.modules.media.video_info     import VideoInfo
@@ -45,12 +47,6 @@ TS_1_INITIAL   = 'initial'
 TS_2_TRYING    = 'trying'
 TS_3_LOCKED    = 'locked'
 TS_4_CANCELLED = 'done'
-
-def _encode_adapter_filepath_to_id(device_id):
-    return device_id[1:].replace('/', '-')
-
-def _decode_adapter_filepath_from_id(encoded_device_id):
-    return '/' + encoded_device_id.replace('-', '/')
 
 
 class DeviceDvbChar(TunerDeviceCommon, ITunerDevice):
@@ -115,10 +111,10 @@ class DeviceDvbChar(TunerDeviceCommon, ITunerDevice):
         the device to the driver.
         """
 
-        return { 'DeviceSets':   self.__device_sets,
-                 'AtscType':     self.__atsc_type,
-                 'Adapter':      self.__adapter,
-                 'Sn':           self.__sn,
+        return { 'DeviceSets': self.__device_sets,
+                 'AtscType': self.__atsc_type,
+                 'Adapter': self.__adapter,
+                 'Sn': self.__sn,
                }
 
     @property
@@ -163,7 +159,16 @@ class DeviceDvbChar(TunerDeviceCommon, ITunerDevice):
     def adapter_index(self, value):
         self.__adapter_index = value
 
+    def __hash__(self):
+        return hash(self.identifier)
 
+    def __eq__(self, o):
+        return (hash(self) == hash(o)) 
+
+    def __ne__(self, o):
+        return (hash(self) != hash(o))
+
+    
 class _ExecuteError(Exception):
     """There was a failure executing an external command."""
 
@@ -173,7 +178,7 @@ class _ExecuteError(Exception):
 
 # TODO: Update the channels-conf references for our channel-list concept.
 
-class _TuneChannel(multiprocessing.Process):#, ManagedRoutine):
+class _TuneChannel(multiprocessing.Process, ManagedRoutine):
     """The multiprocessing process that invokes the external utilities to tune
     channels.
     """
@@ -183,16 +188,23 @@ class _TuneChannel(multiprocessing.Process):#, ManagedRoutine):
     __cancel_event          = None
 
     def __init__(self, tuner, msg_queue):
-        name = ('TuneChannel-%s' % (tuner.unique_id))
+        name = ('TuneChannel-%s' % (str(tuner)))
 
         multiprocessing.Process.__init__(self, name=name)
-        #ManagedRoutine.__init__(self, name, routine_close_priority.P_TUNING_THREAD)
+
+# TODO: Reimplement priorities later.
+# routine_close_priority.P_TUNING_THREAD
+        priority = 10
+        ManagedRoutine.__init__(self, name, priority)
 
         self.__tuner        = tuner
         self.__msg_queue    = msg_queue
         self.__cancel_event = multiprocessing.Event()
 
     def run(self):
+
+        import pydevd
+        pydevd.settrace(port=5678)
 
         logging.info("Starting tuning process for tuner [%s] on PID (%s)." %
                      (self.__tuner, self.pid))
@@ -233,15 +245,12 @@ class _TuneChannel(multiprocessing.Process):#, ManagedRoutine):
 
         # Get data from row in channels.conf .
 
-        channel_info = device.channellist.list.primitive_list[tuner.vchannel]
-        channel_data = channel_info['Data']
-
-        name           = channel_info['Name']
-        frequency      = channel_data['Frequency']
-        modulation_raw = channel_data['Modulation']
-        video_id       = channel_data['VideoId']
-        audio_id       = channel_data['AudioId']
-        program_id     = channel_data['ProgramId']
+        name           = tuner.tune_data.name
+        frequency      = tuner.tune_data.frequency
+        modulation_raw = tuner.tune_data.modulation
+        video_id       = tuner.tune_data.video_id
+        audio_id       = tuner.tune_data.audio_id
+        program_id     = tuner.tune_data.program_id
 
         # Map from the modulation in the channels.conf to the modulation
         # required by PyZap.
@@ -301,7 +310,7 @@ class _TuneChannel(multiprocessing.Process):#, ManagedRoutine):
         try:
             c_azap_tune_silent(descriptor, atsc_tune_info, 1,
                                STATUS_RECEIVER_CB(status_receiver))
-        except Exception as e:
+        except:
             logging.exception("There was an exception while doing the "
                               "low-level tuning.")
             raise
@@ -315,7 +324,8 @@ class _TuneChannel(multiprocessing.Process):#, ManagedRoutine):
 
         self.__cancel_event.set()
 
-        logging.info("Sending SIGALRM to PID (%d) to cancel tuning." % (self.pid))
+        logging.info("Sending SIGALRM to PID (%d) to cancel tuning." % 
+                     (self.pid))
 
         # We wrap the kill in a try-catch since we'll get an OSError if the
         # process is already dead.
@@ -354,7 +364,7 @@ class DriverDvbChar(ITunerDriver):
     def build_from_id(self, id_):
         """Our id is the filepath of the adapter."""
         
-        adapter_filepath = _decode_adapter_filepath_from_id(id_)
+        adapter_filepath = id_
         adapter_filename = basename(adapter_filepath)
         
         adapter_rx = re.compile('adapter([0-9]+)$')
@@ -402,7 +412,7 @@ class DriverDvbChar(ITunerDriver):
 
         devices = []
         for adapter_filepath in adapters:
-            device = self.build_from_id(_encode_adapter_filepath_to_id(adapter_filepath))
+            device = self.build_from_id(adapter_filepath)
 
 # If the SN has been given, check it against what we can calculate, here, and
 # tell the system to ignore the device if the SNs don't match (the device is
@@ -714,13 +724,13 @@ class DriverDvbChar(ITunerDriver):
 
         return (True, get_last_state())
 
-    def set_vchannel(self, tuner, vchannel_scalar=None):
-        """Set the vchannel on the given tuner to the given scalar. If not
-        given, clear state of the tuner.
+    def tune(self, tuner, cc_record=None):
+        """Set the vchannel on the given tuner to the given channel data. If 
+        not given, clear state of the tuner.
         """
 
-        logging.info("Tuning v-channel (%s) using tuner [%s] on device [%s]." %
-                     (vchannel_scalar, tuner, tuner.device))
+        logging.info("Tuning using tuner [%s] on device [%s]:\n%s" %
+                     (tuner, tuner.device, cc_record))
 
         key = (tuner.device.identifier, tuner.tuner_index)
 
@@ -735,27 +745,25 @@ class DriverDvbChar(ITunerDriver):
                                   (tuner, e))
                 raise
 
-            tuner.vchannel = None
+            tuner.tune_data = None
             del self.__tuned[key]
 
-        tuner.vchannel = vchannel_scalar
+        tuner.tune_data = cc_record
 
-        if vchannel_scalar != None:
+        if cc_record is not None:
             queue = multiprocessing.Queue()
             tune = _TuneChannel(tuner,
-                                queue
-                               )
+                                queue)
 
             self.__tuned[key] = [queue, tune, TS_1_INITIAL]
             tune.start()
-            tuner.vchannel = vchannel_scalar
 
 # TODO: Make sure that the tuning process' information is cleaned-up properly.
 # TODO: Make sure that the check_tuning_status() calls correctly determine the current state of the tuning process.
 # TODO: Emit status standardized tuning-status messages.
 
-            logging.info("Channel (%d) successfully tuned in separate thread." %
-                         (tuner.vchannel))
+            logging.info("Tune operation started in separate process:\n%s" %
+                         (tuner.tune_data))
         else:
             logging.info("Tuner-state cleared.")
 
@@ -1018,3 +1026,17 @@ class DriverDvbChar(ITunerDriver):
 
         return False
 
+    @property
+    def tuner_data_type(self):
+        """Returns one of the TD_TYPE_* values (above)."""
+
+        return TD_TYPE_CHANNELSCONF 
+
+    def __hash__(self):
+        return hash(self.name)
+
+    def __eq__(self, o):
+        return (hash(self) == hash(o)) 
+
+    def __ne__(self, o):
+        return (hash(self) != hash(o))

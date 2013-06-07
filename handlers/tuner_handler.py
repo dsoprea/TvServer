@@ -1,14 +1,20 @@
 import logging
 
+from interfaces.device.itunerdriver import TD_TYPE_CHANNELSCONF, \
+                                           TD_TYPE_VCHANNEL
+
+import values
+
+from cf import get
 from handlers import GetHandler
 from device.drivers import available_drivers, get_device_from_big_id, \
                            get_big_id_from_device
 from device.tuner import Tuner
 from device.tuner_info import TunerInfo
-from device import NoTunersAvailable
+from device import NoTunersAvailable, TunerNotAllocated
+from device.channels.channelsconf_record import ChannelsConfRecord
 from big_id import BigId
-
-_tuner = Tuner()
+from handlers import RequestError
 
 
 class TunerHandler(GetHandler):
@@ -19,9 +25,11 @@ class TunerHandler(GetHandler):
         """
 
         try:
+            tuner = get(values.C_DEV_TUNER)
+            
             device = get_device_from_big_id(BigId(bdid))
     
-            tuner = _tuner.request_tuner(specific_device=device)
+            tuner = tuner.request_tuner(specific_device=device)
             if tuner is None:
                 raise NoTunersAvailable("No tuners are available on device "
                                         "[%s]." % (bdid))
@@ -29,28 +37,38 @@ class TunerHandler(GetHandler):
             return { 'tid': tuner.identifier }
         except NoTunersAvailable:
             raise
+        except RequestError:
+            raise
         except:
             message = ("There was an error while tuning on [%s]." % (bdid))
 
             logging.exception(message)
             raise Exception(message)
 
-    def tune(self, tid, name, freq, mod, vid, aid, pid):
+    def tune(self, tid, **kwargs):
         """Tune a channel.
 
-        tid: Tuner ID.
-        name: Name of channel.
-        freq: Frequency of channel.
-        mod: Modulation of channel.
-        vid: VideoID
-        aid: AudioID
-        pid: ProgramID
+        Arguments depend on the tuning requirements of the driver.
         """
 
         try:
             tuner = TunerInfo.build_from_id(tid)
-
-        #tuner.easy_set_vchannel
+            
+            if tuner.is_allocated() is False:
+                raise TunerNotAllocated("Tuner is either not valid or not "
+                                        "allocated.")
+            
+            driver = tuner.device.driver
+            if driver.tuner_data_type == TD_TYPE_CHANNELSCONF:
+                param = ChannelsConfRecord(**kwargs)
+            elif driver.tuner.data_type == TD_TYPE_VCHANNEL:
+                param = kwargs['vchannel']
+            
+            tuner.tune(param)
+        except TunerNotAllocated:
+            raise
+        except RequestError:
+            raise
         except:
             message = "Error while trying to tune."
             
@@ -59,8 +77,10 @@ class TunerHandler(GetHandler):
 
     def status(self):
         try:
+            tuner = get(values.C_DEV_TUNER)
+            
             response = {}
-            for tuner in _tuner.get_statuses().keys():
+            for tuner in tuner.get_statuses().keys():
                 device = tuner.device
                 driver = device.driver
                 
@@ -68,7 +88,7 @@ class TunerHandler(GetHandler):
                 if driver_class_name not in response:
                     response[driver_class_name] = {}
                 
-                device_big_id_str = str(get_big_id_from_device(device))
+                device_big_id_str = repr(get_big_id_from_device(device))
                 tuner_id = tuner.identifier
     
                 if device_big_id_str not in response[driver_class_name]:
@@ -77,6 +97,8 @@ class TunerHandler(GetHandler):
                     response[driver_class_name][device_big_id_str].append(tuner_id)
     
             return response
+        except RequestError:
+            raise
         except:
             message = "Error while trying to find tuning statuses."
 

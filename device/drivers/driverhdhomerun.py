@@ -4,7 +4,7 @@ from os.path import expanduser
 #from rain_config import constants, channel_config, values
 
 #from rain.common.modules import cf
-from interfaces.device.itunerdriver import ITunerDriver
+from interfaces.device.itunerdriver import ITunerDriver, TD_TYPE_VCHANNEL
 from device.device_network_attached import DeviceNetworkAttached
 from device import DriverRequirementsError
 
@@ -314,7 +314,7 @@ class DriverHdHomeRun(ITunerDriver):
 #    
 #        pass
 
-    def set_vchannel(self, tuner, vchannel_scalar=None):
+    def tune(self, tuner, vchannel_scalar=None):
         """Set the vchannel on the given tuner to the given scalar."""
 
 # TODO: Finish support for vchannel_scalar being None.    
@@ -385,3 +385,8 @@ class DriverHdHomeRun(ITunerDriver):
         
         return True
 
+    @property
+    def tuner_data_type(self):
+        """Returns one of the TD_TYPE_* values (above)."""
+
+        raise TD_TYPE_VCHANNEL 

@@ -1,6 +1,6 @@
 import logging
 
-from handlers import GetHandler
+from handlers import GetHandler, RequestError
 from device.drivers import available_drivers
 
 
@@ -25,8 +25,11 @@ class DriverHandler(GetHandler):
         try:
             (driver_cls, device_cls) = available_drivers[dcn]
     
+            driver = driver_cls()
             info = { 'supports_channelscan': \
-                        driver_cls().supports_channelscan }
+                        driver.supports_channelscan,
+                     'tuner_data_type': \
+                        driver.tuner_data_type }
     
             return info
         except:
