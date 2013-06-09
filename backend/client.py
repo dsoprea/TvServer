@@ -5,7 +5,7 @@ from config.backend import pipe_filepath, backend_block_size_bytes, \
 
 from read_buffer import ReadBuffer
 from backend import ResponseTimeout
-from backend.common import serialize_message
+from backend import serialize_message
 
 class Client(object):
     def __init__(self):
@@ -34,7 +34,12 @@ class Client(object):
         s = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
         s.settimeout(client_read_timeout_s)
         s.connect(pipe_filepath)
-        result = s.send(data)
+
+        i = 0
+        while i < (len(data) - 1):        
+            num_sent = s.send(data[i:])
+            i += num_sent
+        
         response = self.__wait_for_one(s)
         s.close()
 

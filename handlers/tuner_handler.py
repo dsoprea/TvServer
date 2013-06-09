@@ -7,18 +7,19 @@ import values
 
 from cf import get
 from handlers import GetHandler
-from device.drivers import available_drivers, get_device_from_big_id, \
-                           get_big_id_from_device
-from device.tuner import Tuner
+from device.drivers import get_big_id_from_device
 from device.tuner_info import TunerInfo
 from device import NoTunersAvailable, TunerNotAllocated
-from device.channels.channelsconf_record import ChannelsConfRecord
-from big_id import BigId
 from handlers import RequestError
 from backend.protocol.tune_pb2 import tune
+from backend.protocol.acquire_pb2 import acquire
 from backend.client import Client
 
 class TunerHandler(GetHandler):
+    def __init__(self):
+        super(TunerHandler, self).__init__()
+        self.__client = Client()
+    
     def acquire(self, bdid):
         """Acquire exclusive access to a tuner, prior to tuning.
         
@@ -26,16 +27,16 @@ class TunerHandler(GetHandler):
         """
 
         try:
-            tuner = get(values.C_DEV_TUNER)
+            acquire_msg = acquire()
+            acquire_msg.version = 1
+            acquire_msg.device_bigid = bdid
+
+            response = self.__client.send_query(acquire_msg)
             
-            device = get_device_from_big_id(BigId(bdid))
-    
-            tuner = tuner.request_tuner(specific_device=device)
-            if tuner is None:
-                raise NoTunersAvailable("No tuners are available on device "
-                                        "[%s]." % (bdid))
+            if response.success == False:
+                raise RequestError("Acquire failed: %s" % (response.message))
             
-            return { 'tid': tuner.identifier }
+            return { 'tid': response.tuning_bigid }
         except NoTunersAvailable:
             raise
         except RequestError:
@@ -80,10 +81,6 @@ class TunerHandler(GetHandler):
 
         try:
             tuner = TunerInfo.build_from_id(tid)
-
-            if tuner.is_allocated() is False:
-                raise TunerNotAllocated("Tuner is either not valid or not "
-                                        "allocated.")
             
             driver = tuner.device.driver
             if driver.tuner_data_type != TD_TYPE_CHANNELSCONF:
@@ -92,6 +89,7 @@ class TunerHandler(GetHandler):
                 
             tune_msg = tune()
             tune_msg.version = 1
+            tune_msg.tuning_bigid = tid
             tune_msg.parameter_type = tune.CHANNELSCONF
             tune_msg.channelsconf_record.version = 1
             tune_msg.channelsconf_record.name = name;
@@ -102,17 +100,12 @@ class TunerHandler(GetHandler):
             tune_msg.channelsconf_record.program_id = int(pid);
             
             # Expect a tune_response in responsee.
-            response = Client().send_query(tune_msg)
+            response = self.__client.send_query(tune_msg)
             
             if response.success == False:
                 raise Exception("Tune failed: %s" % (response.message))
             
             return { "Success": True }
-            
-        except TunerNotAllocated:
-            raise
-        except RequestError:
-            raise
         except:
             message = "Error while trying to tune."
             

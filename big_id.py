@@ -26,6 +26,7 @@ class BigId(object):
     
     def push(self, id_, raw=False):
         
+        id_ = str(id_)
         encoded = urlsafe_b64encode(id_) if raw is False else id_
         
         # Make sure that we always end with at least one '='. This is the only 

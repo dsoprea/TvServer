@@ -177,7 +177,7 @@ class Tuner(ITuner):
         """Return the tuner-index to use, optionally excluding those in the given
         list. Returns None if all are consumed.
         """
-    
+
         logging.info("Getting tuner index given exclude list [%s] with device "
                      "[%s]." % (','.join([str(one_excluded) for one_excluded \
                                                             in exclude]), device))

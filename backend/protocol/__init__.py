@@ -1,10 +1,15 @@
 from backend.protocol.tune_pb2 import tune, tune_response
+from backend.protocol.acquire_pb2 import acquire, acquire_response
 
 MT_TUNE = 'tune'
 MT_TUNE_RESPONSE = 'tune_response'
+MT_ACQUIRE = 'acquire'
+MT_ACQUIRE_RESPONSE = 'acquire_response'
 
 _message_list = ((MT_TUNE, tune),
-                 (MT_TUNE_RESPONSE, tune_response))
+                 (MT_TUNE_RESPONSE, tune_response),
+                 (MT_ACQUIRE, acquire),
+                 (MT_ACQUIRE_RESPONSE, acquire_response))
 
 _messages_bytype = {}
 _messages_byindex = {}

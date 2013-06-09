@@ -11,7 +11,7 @@ from google.protobuf import descriptor_pb2
 DESCRIPTOR = descriptor.FileDescriptor(
   name='tune.proto',
   package='tvserver',
-  serialized_pb='\n\ntune.proto\x12\x08tvserver\"8\n\x13tune_param_vchannel\x12\x0f\n\x07version\x18\x01 \x02(\r\x12\x10\n\x08vchannel\x18\x02 \x01(\r\"\x9f\x01\n\x1ftune_param_channels_conf_record\x12\x0f\n\x07version\x18\x01 \x02(\r\x12\x0c\n\x04name\x18\x02 \x01(\t\x12\x11\n\tfrequency\x18\x03 \x01(\r\x12\x12\n\nmodulation\x18\x04 \x01(\t\x12\x10\n\x08video_id\x18\x05 \x01(\r\x12\x10\n\x08\x61udio_id\x18\x06 \x01(\r\x12\x12\n\nprogram_id\x18\x07 \x01(\r\"\xfd\x01\n\x04tune\x12\x0f\n\x07version\x18\x01 \x02(\r\x12\x37\n\x0eparameter_type\x18\x02 \x01(\x0e\x32\x1f.tvserver.tune.parameter_type_e\x12/\n\x08vchannel\x18\x03 \x01(\x0b\x32\x1d.tvserver.tune_param_vchannel\x12\x46\n\x13\x63hannelsconf_record\x18\x04 \x01(\x0b\x32).tvserver.tune_param_channels_conf_record\"2\n\x10parameter_type_e\x12\x0c\n\x08VCHANNEL\x10\x00\x12\x10\n\x0c\x43HANNELSCONF\x10\x01\"B\n\rtune_response\x12\x0f\n\x07version\x18\x01 \x02(\r\x12\x0f\n\x07success\x18\x02 \x01(\x08\x12\x0f\n\x07message\x18\x03 \x01(\t')
+  serialized_pb='\n\ntune.proto\x12\x08tvserver\"8\n\x13tune_param_vchannel\x12\x0f\n\x07version\x18\x01 \x02(\r\x12\x10\n\x08vchannel\x18\x02 \x01(\r\"\x9f\x01\n\x1ftune_param_channels_conf_record\x12\x0f\n\x07version\x18\x01 \x02(\r\x12\x0c\n\x04name\x18\x02 \x01(\t\x12\x11\n\tfrequency\x18\x03 \x01(\r\x12\x12\n\nmodulation\x18\x04 \x01(\t\x12\x10\n\x08video_id\x18\x05 \x01(\r\x12\x10\n\x08\x61udio_id\x18\x06 \x01(\r\x12\x12\n\nprogram_id\x18\x07 \x01(\r\"\x93\x02\n\x04tune\x12\x0f\n\x07version\x18\x01 \x02(\r\x12\x14\n\x0ctuning_bigid\x18\x02 \x01(\t\x12\x37\n\x0eparameter_type\x18\x03 \x01(\x0e\x32\x1f.tvserver.tune.parameter_type_e\x12/\n\x08vchannel\x18\x04 \x01(\x0b\x32\x1d.tvserver.tune_param_vchannel\x12\x46\n\x13\x63hannelsconf_record\x18\x05 \x01(\x0b\x32).tvserver.tune_param_channels_conf_record\"2\n\x10parameter_type_e\x12\x0c\n\x08VCHANNEL\x10\x00\x12\x10\n\x0c\x43HANNELSCONF\x10\x01\"V\n\rtune_response\x12\x0f\n\x07version\x18\x01 \x02(\r\x12\x0f\n\x07success\x18\x02 \x01(\x08\x12\x0f\n\x07message\x18\x03 \x01(\t\x12\x12\n\nerror_type\x18\x04 \x01(\t')
 
 
 
@@ -32,8 +32,8 @@ _TUNE_PARAMETER_TYPE_E = descriptor.EnumDescriptor(
   ],
   containing_type=None,
   options=None,
-  serialized_start=448,
-  serialized_end=498,
+  serialized_start=470,
+  serialized_end=520,
 )
 
 
@@ -157,22 +157,29 @@ _TUNE = descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       options=None),
     descriptor.FieldDescriptor(
-      name='parameter_type', full_name='tvserver.tune.parameter_type', index=1,
-      number=2, type=14, cpp_type=8, label=1,
+      name='tuning_bigid', full_name='tvserver.tune.tuning_bigid', index=1,
+      number=2, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=unicode("", "utf-8"),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    descriptor.FieldDescriptor(
+      name='parameter_type', full_name='tvserver.tune.parameter_type', index=2,
+      number=3, type=14, cpp_type=8, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     descriptor.FieldDescriptor(
-      name='vchannel', full_name='tvserver.tune.vchannel', index=2,
-      number=3, type=11, cpp_type=10, label=1,
+      name='vchannel', full_name='tvserver.tune.vchannel', index=3,
+      number=4, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     descriptor.FieldDescriptor(
-      name='channelsconf_record', full_name='tvserver.tune.channelsconf_record', index=3,
-      number=4, type=11, cpp_type=10, label=1,
+      name='channelsconf_record', full_name='tvserver.tune.channelsconf_record', index=4,
+      number=5, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
@@ -188,7 +195,7 @@ _TUNE = descriptor.Descriptor(
   is_extendable=False,
   extension_ranges=[],
   serialized_start=245,
-  serialized_end=498,
+  serialized_end=520,
 )
 
 
@@ -220,6 +227,13 @@ _TUNE_RESPONSE = descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
+    descriptor.FieldDescriptor(
+      name='error_type', full_name='tvserver.tune_response.error_type', index=3,
+      number=4, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=unicode("", "utf-8"),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
   ],
   extensions=[
   ],
@@ -229,8 +243,8 @@ _TUNE_RESPONSE = descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=500,
-  serialized_end=566,
+  serialized_start=522,
+  serialized_end=608,
 )
 
 _TUNE.fields_by_name['parameter_type'].enum_type = _TUNE_PARAMETER_TYPE_E

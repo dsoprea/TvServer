@@ -8,7 +8,8 @@ from twisted.internet import reactor, protocol
 from config.backend import pipe_filepath
 from read_buffer import ReadBuffer
 from backend.handlers import Handlers
-from backend.common import serialize_message
+from backend import serialize_message
+from backend.protocol.error_pb2 import error
 
 class WaitForQueries(protocol.Protocol):
     def __init__(self):
@@ -39,10 +40,18 @@ class WaitForQueries(protocol.Protocol):
 
 #        self.transport.loseConnection()
 
-        except:
+        except Exception as e:
             logging.exception("There was an error while acting on incoming "
                               "data.")
-            raise
+
+            exc_type = sys.exc_info()[0]
+
+            response = error()
+            response.version = 1
+            response.type = exc_type.__class__.__name__
+            response.message = str(e)
+            
+            self.transport.write(response.SerializeToString())
 
     def connectionMade(self):
         print("Connection made.")

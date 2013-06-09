@@ -18,25 +18,22 @@ message tune_param_channels_conf_record {
 }
 
 message tune {
-    // This is the first communication expected after a connection is made from 
-    // a client or host process, and this is the only communication sent on a 
-    // data channel that is relay-related (everything else is transferred to
-    // a connection of the opposite role).
-
     required uint32 version = 1;
+    optional string tuning_bigid = 2;
 
     enum parameter_type_e {
         VCHANNEL = 0;
         CHANNELSCONF = 1;
     }
     
-    optional parameter_type_e parameter_type = 2;
-    optional tune_param_vchannel vchannel = 3;
-    optional tune_param_channels_conf_record channelsconf_record = 4;
+    optional parameter_type_e parameter_type = 3;
+    optional tune_param_vchannel vchannel = 4;
+    optional tune_param_channels_conf_record channelsconf_record = 5;
 }
 
 message tune_response {
     required uint32 version = 1;
     optional bool success = 2;
     optional string message = 3;
+    optional string error_type = 4;
 }
