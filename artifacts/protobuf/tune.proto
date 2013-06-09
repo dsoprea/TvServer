@@ -1,0 +1,42 @@
+package tvserver;
+
+message tune_param_vchannel {
+    required uint32 version = 1;
+
+    optional uint32 vchannel = 2;
+}
+
+message tune_param_channels_conf_record {
+    required uint32 version = 1;
+
+    optional string name = 2;
+    optional uint32 frequency = 3;
+    optional string modulation = 4;
+    optional uint32 video_id = 5;
+    optional uint32 audio_id = 6;
+    optional uint32 program_id = 7;
+}
+
+message tune {
+    // This is the first communication expected after a connection is made from 
+    // a client or host process, and this is the only communication sent on a 
+    // data channel that is relay-related (everything else is transferred to
+    // a connection of the opposite role).
+
+    required uint32 version = 1;
+
+    enum parameter_type_e {
+        VCHANNEL = 0;
+        CHANNELSCONF = 1;
+    }
+    
+    optional parameter_type_e parameter_type = 2;
+    optional tune_param_vchannel vchannel = 3;
+    optional tune_param_channels_conf_record channelsconf_record = 4;
+}
+
+message tune_response {
+    required uint32 version = 1;
+    optional bool success = 2;
+    optional string message = 3;
+}

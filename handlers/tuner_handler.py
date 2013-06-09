@@ -15,7 +15,8 @@ from device import NoTunersAvailable, TunerNotAllocated
 from device.channels.channelsconf_record import ChannelsConfRecord
 from big_id import BigId
 from handlers import RequestError
-
+from backend.protocol.tune_pb2 import tune
+from backend.client import Client
 
 class TunerHandler(GetHandler):
     def acquire(self, bdid):
@@ -45,11 +46,8 @@ class TunerHandler(GetHandler):
             logging.exception(message)
             raise Exception(message)
 
-    def tune(self, tid, **kwargs):
-        """Tune a channel.
-
-        Arguments depend on the tuning requirements of the driver.
-        """
+    def tunevc(self, tid, vc):
+        """Tune a channel using a single virtual-channel."""
 
         try:
             tuner = TunerInfo.build_from_id(tid)
@@ -59,12 +57,58 @@ class TunerHandler(GetHandler):
                                         "allocated.")
             
             driver = tuner.device.driver
-            if driver.tuner_data_type == TD_TYPE_CHANNELSCONF:
-                param = ChannelsConfRecord(**kwargs)
-            elif driver.tuner.data_type == TD_TYPE_VCHANNEL:
-                param = kwargs['vchannel']
+            if driver.tuner.data_type != TD_TYPE_VCHANNEL:
+                raise Exception("This interface requires virtual-channel "
+                                "parameters.")
+
+            #tuner.tune(tuner, vc)
+        except TunerNotAllocated:
+            raise
+        except RequestError:
+            raise
+        except:
+            message = "Error while trying to tune (VC)."
             
-            tuner.tune(param)
+            logging.exception(message)
+            raise Exception(message)
+
+    def tunecc(self, tid, name, freq, mod, vid, aid, pid):
+        """Tune a channel.
+
+        Arguments depend on the tuning requirements of the driver.
+        """
+
+        try:
+            tuner = TunerInfo.build_from_id(tid)
+
+            if tuner.is_allocated() is False:
+                raise TunerNotAllocated("Tuner is either not valid or not "
+                                        "allocated.")
+            
+            driver = tuner.device.driver
+            if driver.tuner_data_type != TD_TYPE_CHANNELSCONF:
+                raise Exception("This interface required channels-conf "
+                                "parameters.")
+                
+            tune_msg = tune()
+            tune_msg.version = 1
+            tune_msg.parameter_type = tune.CHANNELSCONF
+            tune_msg.channelsconf_record.version = 1
+            tune_msg.channelsconf_record.name = name;
+            tune_msg.channelsconf_record.frequency = int(freq);
+            tune_msg.channelsconf_record.modulation = mod;
+            tune_msg.channelsconf_record.video_id = int(vid);
+            tune_msg.channelsconf_record.audio_id = int(aid);
+            tune_msg.channelsconf_record.program_id = int(pid);
+            
+            # Expect a tune_response in responsee.
+            response = Client().send_query(tune_msg)
+            
+            if response.success == False:
+                raise Exception("Tune failed: %s" % (response.message))
+            
+            return { "Success": True }
+            
         except TunerNotAllocated:
             raise
         except RequestError:

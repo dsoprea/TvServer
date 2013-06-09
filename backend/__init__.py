@@ -1,0 +1,2 @@
+class ResponseTimeout(Exception):
+    pass

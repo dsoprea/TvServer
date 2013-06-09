@@ -4,6 +4,9 @@ import subprocess
 import multiprocessing
 import Queue
 
+# TODO: Remove this after debugging multiprocessing.
+import pydevd
+            
 from hashlib import sha1
 from json import loads, dumps
 from os.path import expanduser, isfile, isdir, dirname, exists, basename
@@ -202,23 +205,21 @@ class _TuneChannel(multiprocessing.Process, ManagedRoutine):
         self.__cancel_event = multiprocessing.Event()
 
     def run(self):
-
-        import pydevd
-        pydevd.settrace(port=5678)
+#        pydevd.settrace(port=5678)
 
         logging.info("Starting tuning process for tuner [%s] on PID (%s)." %
                      (self.__tuner, self.pid))
-
+ 
         try:
             self.__tune()
         except Exception as e:
             self.__msg_queue.put((MT_ERROR, "There was an exception: %s" % (str(e))))
             logging.exception("There was an exception while tuning. Tuning "
                               "cancelled.")
-
+ 
         logging.info("Tuning process for tuner [%s] is stopping."%
                      (self.__tuner))
-
+ 
         self.__msg_queue.put((MT_CANCELLED, None))
 
     def __tune(self):

@@ -6,9 +6,9 @@ class ChannelsConfRecord(object):
         self.__name = name
         self.__frequency = freq
         self.__modulation = mod
-        self.__video_id = vid
-        self.__audio_id = aid
-        self.__program_id = pid
+        self.__video_id = int(vid)
+        self.__audio_id = int(aid)
+        self.__program_id = int(pid)
 
         self.__identifier = repr(BigId().push(name).\
                                          push(freq).\
@@ -32,6 +32,10 @@ class ChannelsConfRecord(object):
                                   audio_id, program_id)
 
     def __str__(self):
+        return ('<CC NAME=[%s] F=[%s] M=[%s]>' % 
+                (self.__video_id, self.__audio_id, self.__program_id))
+
+    def __repr__(self):
         return ('<CC NAME=[%s] F=[%s] M=[%s] V=[%d] A=[%d] P=[%d]>' % 
                 (self.__name, self.__frequency, self.__modulation, 
                  self.__video_id, self.__audio_id, self.__program_id))
