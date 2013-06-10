@@ -12,8 +12,6 @@ from pyzap.calls import c_azap_tune_silent
 from pyzap.types import TUNER_DESCRIPTOR, ATSC_TUNE_INFO, STATUS_RECEIVER_CB
 from pyzap.constants import modulation
 
-import log_config
-
 #from rain_config import constants, values, channel_config, \
 #                                routine_close_priority
 
