@@ -31,9 +31,3 @@ message tune {
     optional tune_param_channels_conf_record channelsconf_record = 5;
 }
 
-message tune_response {
-    required uint32 version = 1;
-    optional bool success = 2;
-    optional string message = 3;
-    optional string error_type = 4;
-}

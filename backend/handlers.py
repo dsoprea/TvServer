@@ -3,8 +3,9 @@ import values
 from cf import get
 from device.drivers import get_device_from_big_id
 from big_id import BigId
-from backend.protocol.acquire_pb2 import acquire_response
-from backend.protocol.tune_pb2 import tune, tune_response
+from backend.protocol.acquire_pb2 import acquireresponse
+from backend.protocol.tune_pb2 import tune
+from backend.protocol.general_pb2 import generalresponse
 from device.tuner_info import TunerInfo
 from interfaces.device.itunerdriver import TD_TYPE_CHANNELSCONF, \
                                            TD_TYPE_VCHANNEL
@@ -20,7 +21,7 @@ class Handlers(object):
         device = get_device_from_big_id(BigId(bdid))
         tuner = self.__tuner.request_tuner(specific_device=device)
 
-        response = acquire_response()
+        response = acquireresponse()
         response.version = 1
 
         if tuner is None:
@@ -34,13 +35,25 @@ class Handlers(object):
 
         return response
 
+    def handleCleartune(self, message):
+        btid = message.tuning_bigid
+
+        tuner = TunerInfo.build_from_id(btid)
+        tuner.tune(None)
+
+        response = generalresponse()
+        response.version = 1
+        response.success = True
+        
+        return response
+
     def handleTune(self, message):
         btid = message.tuning_bigid
 
         tuner = TunerInfo.build_from_id(btid)
         driver = tuner.device.driver
 
-        response = tune_response()
+        response = generalresponse()
         response.version = 1
         response.success = False
         
@@ -60,7 +73,8 @@ class Handlers(object):
                 return response
 
             response.success = True
-            tuner.tune(message.vchannel.vchannel)
+# TODO: Finish.
+            #tuner.tune(message.vchannel.vchannel)
         elif message.parameter_type == tune.CHANNELSCONF:
             if driver.tuner_data_type != TD_TYPE_CHANNELSCONF:
                 response.error_type = 'arguments'

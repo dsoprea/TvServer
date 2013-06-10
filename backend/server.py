@@ -1,6 +1,7 @@
 import sys
 import logging
 
+from os import remove
 from twisted.python.log import startLogging
 #from twisted.internet.defer import Deferred
 from twisted.internet import reactor, protocol
@@ -10,6 +11,7 @@ from read_buffer import ReadBuffer
 from backend.handlers import Handlers
 from backend import serialize_message
 from backend.protocol.error_pb2 import error
+
 
 class WaitForQueries(protocol.Protocol):
     def __init__(self):
@@ -66,5 +68,10 @@ def start_server():
     serverFactory = protocol.ServerFactory()
     serverFactory.protocol = WaitForQueries
 
+    try:
+        remove(pipe_filepath)
+    except:
+        pass
+    
     reactor.listenUNIX(pipe_filepath, serverFactory)
     reactor.run()

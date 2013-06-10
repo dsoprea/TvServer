@@ -1,13 +1,9 @@
 import sha
 import re
-import subprocess
-import multiprocessing
-import Queue
 
-from hashlib import sha1
-from json import loads, dumps
-from os.path import expanduser, isfile, isdir, dirname, exists, basename
-from os import listdir, stat, minor, major, environ, kill
+from multiprocessing import Process, Queue, Event
+from os.path import isfile, isdir, exists, basename
+from os import listdir, stat, minor, major, kill
 from fnmatch import fnmatch
 from platform import system
 from signal import SIGALRM
@@ -16,16 +12,16 @@ from pyzap.calls import c_azap_tune_silent
 from pyzap.types import TUNER_DESCRIPTOR, ATSC_TUNE_INFO, STATUS_RECEIVER_CB
 from pyzap.constants import modulation
 
+import log_config
+
 #from rain_config import constants, values, channel_config, \
 #                                routine_close_priority
 
 from interfaces.device.itunerdriver import ITunerDriver, TD_TYPE_CHANNELSCONF
 from interfaces.device.itunerdevice import ITunerDevice
 from interfaces.device.ituner import *
-from device.device_network_attached import DeviceNetworkAttached
 from device.tuner_device_common import TunerDeviceCommon
-from device import DriverRequirementsError, DriverConfigurationError, \
-                   DeviceDoesNotExist
+from device import DeviceDoesNotExist
 
 from managed_routine import ManagedRoutine
 
@@ -178,7 +174,7 @@ class _ExecuteError(Exception):
 
 # TODO: Update the channels-conf references for our channel-list concept.
 
-class _TuneChannel(multiprocessing.Process, ManagedRoutine):
+class _TuneChannel(Process, ManagedRoutine):
     """The multiprocessing process that invokes the external utilities to tune
     channels.
     """
@@ -189,8 +185,7 @@ class _TuneChannel(multiprocessing.Process, ManagedRoutine):
 
     def __init__(self, tuner, msg_queue):
         name = ('TuneChannel-%s' % (str(tuner)))
-
-        multiprocessing.Process.__init__(self, name=name)
+        super(_TuneChannel, self).__init__(name=name)
 
 # TODO: Reimplement priorities later.
 # routine_close_priority.P_TUNING_THREAD
@@ -199,7 +194,7 @@ class _TuneChannel(multiprocessing.Process, ManagedRoutine):
 
         self.__tuner        = tuner
         self.__msg_queue    = msg_queue
-        self.__cancel_event = multiprocessing.Event()
+        self.__cancel_event = Event()
 
     def run(self):
         logging.info("Starting tuning process for tuner [%s] on PID (%s)." %
@@ -223,6 +218,8 @@ class _TuneChannel(multiprocessing.Process, ManagedRoutine):
         that if there is a tuning error, the error will be emitted to the
         queue.
         """
+
+        logging.debug("Executing tune.")
 
         tuner = self.__tuner
         device = self.__tuner.device
@@ -284,17 +281,28 @@ class _TuneChannel(multiprocessing.Process, ManagedRoutine):
         # Do the tune. This will continue until the driver emits a SIGALRM,
         # which will break the loop in ZapLib.
 
+        is_cancelled = lambda: self.is_cancelled()
+
         def status_receiver(status, signal, snr, ber, uncorrected_blocks, \
                             is_locked):
+            if is_cancelled():
+                logging.debug("Tune has been cancelled. Instructing tuning "
+                              "library to quit.")
+
+                return 0
+            
             try:
                 status_package = (status, signal, snr, ber,
                                   uncorrected_blocks, is_locked)
+
+                logging.debug("Received status:\n%s" % (status_package,))
 
                 self.__msg_queue.put((MT_STATUS, status_package))
 
                 return 1
             except KeyboardInterrupt:
-                return 0
+                # We don't recognize a keyboard break in this context.
+                return 1
 
 #            print('%X' % status)
 #            print('%X' % signal)
@@ -302,6 +310,8 @@ class _TuneChannel(multiprocessing.Process, ManagedRoutine):
 #            print('%X' % ber)
 #            print('%X' % uncorrected_blocks)
 #            print('%X' % is_locked)
+
+        logging.debug("Invoking tune call.")
 
         try:
             c_azap_tune_silent(descriptor, atsc_tune_info, 1,
@@ -343,7 +353,7 @@ class _TuneChannel(multiprocessing.Process, ManagedRoutine):
         logging.info("Cancel of tune on tuner [%s] complete." % (self.__tuner))
 
     def is_cancelled(self):
-        return self.__cancel_set.is_set()
+        return self.__cancel_event.is_set()
 
 
 class DriverDvbChar(ITunerDriver):
@@ -747,9 +757,8 @@ class DriverDvbChar(ITunerDriver):
         tuner.tune_data = cc_record
 
         if cc_record is not None:
-            queue = multiprocessing.Queue()
-            tune = _TuneChannel(tuner,
-                                queue)
+            queue = Queue()
+            tune = _TuneChannel(tuner, queue)
 
             self.__tuned[key] = [queue, tune, TS_1_INITIAL]
             tune.start()

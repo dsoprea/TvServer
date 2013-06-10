@@ -11,7 +11,7 @@ from google.protobuf import descriptor_pb2
 DESCRIPTOR = descriptor.FileDescriptor(
   name='acquire.proto',
   package='',
-  serialized_pb='\n\racquire.proto\"0\n\x07\x61\x63quire\x12\x0f\n\x07version\x18\x01 \x02(\r\x12\x14\n\x0c\x64\x65vice_bigid\x18\x02 \x01(\t\"o\n\x10\x61\x63quire_response\x12\x0f\n\x07version\x18\x01 \x02(\r\x12\x0f\n\x07success\x18\x02 \x01(\x08\x12\x0f\n\x07message\x18\x03 \x01(\t\x12\x12\n\nerror_type\x18\x04 \x01(\t\x12\x14\n\x0ctuning_bigid\x18\x05 \x01(\t')
+  serialized_pb='\n\racquire.proto\"0\n\x07\x61\x63quire\x12\x0f\n\x07version\x18\x01 \x02(\r\x12\x14\n\x0c\x64\x65vice_bigid\x18\x02 \x01(\t\"n\n\x0f\x61\x63quireresponse\x12\x0f\n\x07version\x18\x01 \x02(\r\x12\x0f\n\x07success\x18\x02 \x01(\x08\x12\x0f\n\x07message\x18\x03 \x01(\t\x12\x12\n\nerror_type\x18\x04 \x01(\t\x12\x14\n\x0ctuning_bigid\x18\x05 \x01(\t')
 
 
 
@@ -51,43 +51,43 @@ _ACQUIRE = descriptor.Descriptor(
 )
 
 
-_ACQUIRE_RESPONSE = descriptor.Descriptor(
-  name='acquire_response',
-  full_name='acquire_response',
+_ACQUIRERESPONSE = descriptor.Descriptor(
+  name='acquireresponse',
+  full_name='acquireresponse',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   fields=[
     descriptor.FieldDescriptor(
-      name='version', full_name='acquire_response.version', index=0,
+      name='version', full_name='acquireresponse.version', index=0,
       number=1, type=13, cpp_type=3, label=2,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     descriptor.FieldDescriptor(
-      name='success', full_name='acquire_response.success', index=1,
+      name='success', full_name='acquireresponse.success', index=1,
       number=2, type=8, cpp_type=7, label=1,
       has_default_value=False, default_value=False,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     descriptor.FieldDescriptor(
-      name='message', full_name='acquire_response.message', index=2,
+      name='message', full_name='acquireresponse.message', index=2,
       number=3, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=unicode("", "utf-8"),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     descriptor.FieldDescriptor(
-      name='error_type', full_name='acquire_response.error_type', index=3,
+      name='error_type', full_name='acquireresponse.error_type', index=3,
       number=4, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=unicode("", "utf-8"),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     descriptor.FieldDescriptor(
-      name='tuning_bigid', full_name='acquire_response.tuning_bigid', index=4,
+      name='tuning_bigid', full_name='acquireresponse.tuning_bigid', index=4,
       number=5, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=unicode("", "utf-8"),
       message_type=None, enum_type=None, containing_type=None,
@@ -103,11 +103,11 @@ _ACQUIRE_RESPONSE = descriptor.Descriptor(
   is_extendable=False,
   extension_ranges=[],
   serialized_start=67,
-  serialized_end=178,
+  serialized_end=177,
 )
 
 DESCRIPTOR.message_types_by_name['acquire'] = _ACQUIRE
-DESCRIPTOR.message_types_by_name['acquire_response'] = _ACQUIRE_RESPONSE
+DESCRIPTOR.message_types_by_name['acquireresponse'] = _ACQUIRERESPONSE
 
 class acquire(message.Message):
   __metaclass__ = reflection.GeneratedProtocolMessageType
@@ -115,10 +115,10 @@ class acquire(message.Message):
   
   # @@protoc_insertion_point(class_scope:acquire)
 
-class acquire_response(message.Message):
+class acquireresponse(message.Message):
   __metaclass__ = reflection.GeneratedProtocolMessageType
-  DESCRIPTOR = _ACQUIRE_RESPONSE
+  DESCRIPTOR = _ACQUIRERESPONSE
   
-  # @@protoc_insertion_point(class_scope:acquire_response)
+  # @@protoc_insertion_point(class_scope:acquireresponse)
 
 # @@protoc_insertion_point(module_scope)

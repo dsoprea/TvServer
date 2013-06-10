@@ -1,15 +1,20 @@
-from backend.protocol.tune_pb2 import tune, tune_response
-from backend.protocol.acquire_pb2 import acquire, acquire_response
+from backend.protocol.tune_pb2 import tune
+from backend.protocol.acquire_pb2 import acquire, acquireresponse
+from backend.protocol.error_pb2 import error
+from backend.protocol.cleartune_pb2 import cleartune
+from backend.protocol.general_pb2 import generalresponse
 
 MT_TUNE = 'tune'
-MT_TUNE_RESPONSE = 'tune_response'
+MT_GENERALRESPONSE = 'generalresponse'
 MT_ACQUIRE = 'acquire'
-MT_ACQUIRE_RESPONSE = 'acquire_response'
+MT_ACQUIRERESPONSE = 'acquireresponse'
+MT_CLEARTUNE = 'cleartune'
 
-_message_list = ((MT_TUNE, tune),
-                 (MT_TUNE_RESPONSE, tune_response),
+_message_list = ((MT_GENERALRESPONSE, generalresponse),
+                 (MT_TUNE, tune),
                  (MT_ACQUIRE, acquire),
-                 (MT_ACQUIRE_RESPONSE, acquire_response))
+                 (MT_ACQUIRERESPONSE, acquireresponse),
+                 (MT_CLEARTUNE, cleartune))
 
 _messages_bytype = {}
 _messages_byindex = {}

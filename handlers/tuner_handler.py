@@ -12,6 +12,7 @@ from device.tuner_info import TunerInfo
 from device import NoTunersAvailable, TunerNotAllocated
 from handlers import RequestError
 from backend.protocol.tune_pb2 import tune
+from backend.protocol.cleartune_pb2 import cleartune
 from backend.protocol.acquire_pb2 import acquire
 from backend.client import Client
 
@@ -48,7 +49,7 @@ class TunerHandler(GetHandler):
             raise Exception(message)
 
     def tunevc(self, tid, vc):
-        """Tune a channel using a single virtual-channel."""
+        """Tune a channel on a device requiring a single virtual-channel."""
 
         try:
             tuner = TunerInfo.build_from_id(tid)
@@ -74,10 +75,7 @@ class TunerHandler(GetHandler):
             raise Exception(message)
 
     def tunecc(self, tid, name, freq, mod, vid, aid, pid):
-        """Tune a channel.
-
-        Arguments depend on the tuning requirements of the driver.
-        """
+        """Tune a channel on a device requiring channels-conf data."""
 
         try:
             tuner = TunerInfo.build_from_id(tid)
@@ -99,7 +97,7 @@ class TunerHandler(GetHandler):
             tune_msg.channelsconf_record.audio_id = int(aid);
             tune_msg.channelsconf_record.program_id = int(pid);
             
-            # Expect a tune_response in responsee.
+            # Expect a general_response in responsee.
             response = self.__client.send_query(tune_msg)
             
             if response.success == False:
@@ -108,6 +106,27 @@ class TunerHandler(GetHandler):
             return { "Success": True }
         except:
             message = "Error while trying to tune."
+            
+            logging.exception(message)
+            raise Exception(message)
+
+    def cleartune(self, tid):
+        """Stop tuning."""
+
+        try:
+            clear_tune_msg = cleartune()
+            clear_tune_msg.version = 1
+            clear_tune_msg.tuning_bigid = tid
+            
+            # Expect a general_response in responsee.
+            response = self.__client.send_query(clear_tune_msg)
+            
+            if response.success == False:
+                raise Exception("Clear-tune failed: %s" % (response.message))
+            
+            return { "Success": True }
+        except:
+            message = "Error while trying to clear the tune."
             
             logging.exception(message)
             raise Exception(message)

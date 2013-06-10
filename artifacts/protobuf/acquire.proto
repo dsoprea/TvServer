@@ -3,7 +3,7 @@ message acquire {
     optional string device_bigid = 2;
 }
 
-message acquire_response {
+message acquireresponse {
     required uint32 version = 1;
     optional bool success = 2;
     optional string message = 3;
