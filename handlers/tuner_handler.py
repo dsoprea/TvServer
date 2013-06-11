@@ -96,7 +96,7 @@ class TunerHandler(GetHandler):
             tune_msg.channelsconf_record.video_id = int(vid);
             tune_msg.channelsconf_record.audio_id = int(aid);
             tune_msg.channelsconf_record.program_id = int(pid);
-            
+# TODO: the web request handler should only receive responses addressed to that particular thread.
             # Expect a general_response in responsee.
             response = self.__client.send_query(tune_msg)
             
