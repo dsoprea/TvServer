@@ -29,6 +29,8 @@ class DeviceHdHomeRun(DeviceNetworkAttached):
     def __init__(self, driver, ip, tuner_quantity, data=None, channellist=None):
         DeviceNetworkAttached.__init__(self, driver, ip, tuner_quantity, data)
 
+        self.__driver = driver
+        self.__ip = ip
         self.__ll_device   = data
         self.__channellist = channellist
 
@@ -36,10 +38,35 @@ class DeviceHdHomeRun(DeviceNetworkAttached):
         return self.__str__()
 
     def __str__(self):
-        return ('DEV-HDHR %s(%s TUNERS=%d SN=%s)' % (self.driver.__class__.__name__, 
-                                           self.__ll_device.nice_ip, 
-                                           self.__ll_device.tuner_count, 
-                                           self.__ll_device.nice_device_id))
+        return ('DEV-HDHR %s(%s TUNERS=%d SN=%s)' % 
+                (self.driver.__class__.__name__, 
+                 self.__ll_device.nice_ip, 
+                 self.__ll_device.tuner_count, 
+                 self.__ll_device.nice_device_id))
+
+    @property
+    def driver(self):
+        """Returns the driver that represents us."""
+
+        return self.__driver
+
+    @property
+    def identifier(self):
+        """Return an adapter-filepath."""
+
+        return self.address
+
+    @property
+    def address(self):
+        """Returns the DVB file-path."""
+
+        return self.__ip
+
+    @property
+    def tuner_quantity(self):
+        """Returns the number of tuners available on the device."""
+
+        return self.__ll_device.tuner_count
 
     @property
     def supported_channelliststypes(self):
@@ -60,6 +87,16 @@ class DeviceHdHomeRun(DeviceNetworkAttached):
         """Set a new instance of an IChannelList to tune with."""
 
         self.__channellist = channellist
+
+    def __hash__(self):
+        return hash(self.identifier)
+
+    def __eq__(self, o):
+        return (hash(self) == hash(o)) 
+
+    def __ne__(self, o):
+        return (hash(self) != hash(o))
+
 
 class DriverHdHomeRun(ITunerDriver):
     """Represents an interface to a particular class of TV tuner."""
@@ -95,28 +132,47 @@ class DriverHdHomeRun(ITunerDriver):
 
         DriverHdHomeRun.__init_so()
 
-    def enumerate_devices(self):
+    def __build_from_enumerated(self, enumerated_device):
+        try:
+            return DeviceHdHomeRun(self, 
+                                   enumerated_device.nice_ip, 
+                                   enumerated_device.tuner_count, 
+                                   enumerated_device)
+
+        except:
+            logging.exception("Could not formalize found device [%s]." % 
+                              (enumerated_device))
+            raise
+
+    def __enumerate_devices_internal(self, ip=None):
         """List available devices."""
 
         try:
-            devices = self.HdhrUtility.discover_find_devices_custom()
+            found = self.HdhrUtility.discover_find_devices_custom(ip)
         except:
             logging.exception("There was an exception while trying to discover "
                              "HdHomeRun devices.")
             raise
 
-        formal = []
-        for device in devices:
-            try:
-                device = DeviceHdHomeRun(self, device.nice_ip, 
-                                         device.tuner_count, device)
+        devices = []
+        for found_device in found:
+            device = self.__build_from_enumerated(found_device)
+            devices.append(device)
 
-                formal.append(device)
-            except:
-                logging.exception("Could not formalize found device.")
-                raise
+        return devices
 
-        return formal
+    def build_from_id(self, id_):
+        """Our id is the IP of the adapter."""
+
+        found = self.__enumerate_devices_internal(id_)
+        if not found:
+            raise Exception("Device with IP [%s] for rebuild was not found." % 
+                            (id_))
+
+        return found[0]
+
+    def enumerate_devices(self):
+        return self.__enumerate_devices_internal()
 
     @staticmethod
     def convert_to_dict(device):
@@ -386,7 +442,13 @@ class DriverHdHomeRun(ITunerDriver):
         return True
 
     @property
+    def stream_mimetype(self):
+        return "video/mpeg2"
+
+    @property
     def tuner_data_type(self):
         """Returns one of the TD_TYPE_* values (above)."""
 
         raise TD_TYPE_VCHANNEL 
+
+

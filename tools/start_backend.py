@@ -1,3 +1,5 @@
+import multiprocessing
+
 import log_config
 
 from backend import server

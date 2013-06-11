@@ -99,6 +99,12 @@ class DeviceDvbChar(TunerDeviceCommon, ITunerDevice):
         return self.__adapter
 
     @property
+    def tuner_quantity(self):
+        """Returns the number of tuners available on the device."""
+
+        return len(self.__device_sets)
+
+    @property
     def junk_data(self):
         """Returns an object of an unspecified type that the driver knows how
         to interpret. Used for implementation-specific data to be passed from
@@ -110,12 +116,6 @@ class DeviceDvbChar(TunerDeviceCommon, ITunerDevice):
                  'Adapter': self.__adapter,
                  'Sn': self.__sn,
                }
-
-    @property
-    def tuner_quantity(self):
-        """Returns the number of tuners available on the device."""
-
-        return len(self.__device_sets)
 
     @property
     def atsc_type(self):
@@ -162,7 +162,7 @@ class DeviceDvbChar(TunerDeviceCommon, ITunerDevice):
     def __ne__(self, o):
         return (hash(self) != hash(o))
 
-    
+
 class _ExecuteError(Exception):
     """There was a failure executing an external command."""
 
@@ -195,9 +195,11 @@ class _TuneChannel(Process, ManagedRoutine):
         self.__cancel_event = Event()
 
     def run(self):
+        pydevd.settrace()
+        
         logging.info("Starting tuning process for tuner [%s] on PID (%s)." %
                      (self.__tuner, self.pid))
- 
+
         try:
             self.__tune()
         except Exception as e:
@@ -1035,11 +1037,6 @@ class DriverDvbChar(ITunerDriver):
 
         return TD_TYPE_CHANNELSCONF 
 
-    def __hash__(self):
-        return hash(self.name)
-
-    def __eq__(self, o):
-        return (hash(self) == hash(o)) 
-
-    def __ne__(self, o):
-        return (hash(self) != hash(o))
+    @property
+    def stream_mimetype(self):
+        return "video/mpegts"

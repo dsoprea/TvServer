@@ -96,3 +96,16 @@ class ITunerDriver(IDictable):#, IPanelSource):
         """Returns one of the TD_TYPE_* values (above)."""
 
         raise NotImplementedError()
+
+    @property
+    def stream_mimetype(self):
+        return "video/mpeg2"
+
+    def __hash__(self):
+        return hash(self.name)
+
+    def __eq__(self, o):
+        return (hash(self) == hash(o)) 
+
+    def __ne__(self, o):
+        return (hash(self) != hash(o))

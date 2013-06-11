@@ -24,6 +24,12 @@ class ITunerDevice(object):
         raise NotImplementedError()
 
     @property
+    def tuner_quantity(self):
+        """Returns the number of tuners available on the device."""
+        
+        raise NotImplementedError()
+        
+    @property
     def junk_data(self):
         """Returns an object of an unspecified type that the driver knows how 
         to interpret. Used for implementation-specific data to be passed from
@@ -32,17 +38,6 @@ class ITunerDevice(object):
 
         raise NotImplementedError()
 
-    @property
-    def tuner_quantity(self):
-        """Returns the number of tuners available on the device."""
-        
-        raise NotImplementedError()
-
-    def __hash__(self):
-        """Returns a unique string for this device."""
-# TODO: This needs to implement priority.    
-        raise NotImplementedError()
-        
     def __cmp__(self, o):
         """Returns 0 if <self> equals <o>, and -1 otherwise."""
     
@@ -68,3 +63,11 @@ class ITunerDevice(object):
 
         raise NotImplementedError()
 
+    def __hash__(self):
+        raise NotImplementedError()
+
+    def __eq__(self, o):
+        raise NotImplementedError()
+
+    def __ne__(self, o):
+        raise NotImplementedError()
