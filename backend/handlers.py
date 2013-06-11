@@ -1,11 +1,12 @@
 import values
 
 from cf import get
-from device.drivers import get_device_from_big_id
+from device.drivers import get_device_from_big_id, get_big_id_from_device
 from big_id import BigId
 from backend.protocol.acquire_pb2 import acquireresponse
 from backend.protocol.tune_pb2 import tune
 from backend.protocol.general_pb2 import generalresponse
+from backend.protocol.devicestatus_pb2 import devicestatusresponse
 from device.tuner_info import TunerInfo
 from interfaces.device.itunerdriver import TD_TYPE_CHANNELSCONF, \
                                            TD_TYPE_VCHANNEL
@@ -100,3 +101,39 @@ class Handlers(object):
                                 (message.__class__.__name__))
 
         return response
+
+    def handleDevicestatus(self, message):
+        tuner = get(values.C_DEV_TUNER)
+
+        response = {}
+        for device, tuner_info_list in tuner.get_statuses().iteritems():
+            driver = device.driver
+            dcn = driver.__class__.__name__
+            if dcn not in response:
+                response[dcn] = {}
+            
+            device_big_id_str = repr(get_big_id_from_device(device))
+
+            for tuner_info in tuner_info_list:
+                if device_big_id_str not in response[dcn]:
+                    response[dcn][device_big_id_str] = [tuner_info.identifier]
+                else:
+                    response[dcn][device_big_id_str].append(tuner_info.identifier)
+
+        response_msg = devicestatusresponse()
+        response_msg.version = 1
+
+        for dcn, devices in response.iteritems():
+            driver = response_msg.drivers.add()
+            driver.version = 1
+            driver.dcn = dcn
+            
+            for bdid_str, tuners in devices.iteritems():
+                device = driver.devices.add()
+                device.version = 1
+                device.bdid = bdid_str
+                
+                for tuner_id in tuners:
+                    device.tuner_ids.append(tuner_id)
+            
+        return response_msg

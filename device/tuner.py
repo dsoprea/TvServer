@@ -346,17 +346,17 @@ class Tuner(ITuner):
         """
     
         statuses = {}
-        for device, tuner_allocation in self.__allocations.iteritems():
+        for device, tuner_allocations in self.__allocations.iteritems():
             device_statuses = []
-            for tuner_allocation_info in tuner_allocation:
-                if tuner_allocation_info[0] is None:
+            for tuner_allocation_info in tuner_allocations:
+                tuning_info = tuner_allocation_info[0]
+                if tuning_info is None:
                     continue
 
-                device_statuses[tuner_allocation_info[0]].\
-                    append(tuner_allocation_info[0])
+                device_statuses.append(tuning_info)
 
             if device_statuses:
-                statuses[device.identifier] = device_statuses
+                statuses[device] = device_statuses
 
         return statuses
 

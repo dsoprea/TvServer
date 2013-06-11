@@ -14,6 +14,7 @@ from handlers import RequestError
 from backend.protocol.tune_pb2 import tune
 from backend.protocol.cleartune_pb2 import cleartune
 from backend.protocol.acquire_pb2 import acquire
+from backend.protocol.devicestatus_pb2 import devicestatus
 from backend.client import Client
 
 class TunerHandler(GetHandler):
@@ -114,12 +115,12 @@ class TunerHandler(GetHandler):
         """Stop tuning."""
 
         try:
-            clear_tune_msg = cleartune()
-            clear_tune_msg.version = 1
-            clear_tune_msg.tuning_bigid = tid
+            cleartune_msg = cleartune()
+            cleartune_msg.version = 1
+            cleartune_msg.tuning_bigid = tid
             
             # Expect a general_response in responsee.
-            response = self.__client.send_query(clear_tune_msg)
+            response = self.__client.send_query(cleartune_msg)
             
             if response.success == False:
                 raise Exception("Clear-tune failed: %s" % (response.message))
@@ -133,30 +134,26 @@ class TunerHandler(GetHandler):
 
     def status(self):
         try:
-            tuner = get(values.C_DEV_TUNER)
-            
+            devicestatus_msg = devicestatus()
+            devicestatus_msg.version = 1
+
+            response_msg = self.__client.send_query(devicestatus_msg)
+
             response = {}
-            for tuner in tuner.get_statuses().keys():
-                device = tuner.device
-                driver = device.driver
-                
-                driver_class_name = driver.__class__.__name__
-                if driver_class_name not in response:
-                    response[driver_class_name] = {}
-                
-                device_big_id_str = repr(get_big_id_from_device(device))
-                tuner_id = tuner.identifier
-    
-                if device_big_id_str not in response[driver_class_name]:
-                    response[driver_class_name][device_big_id_str] = [tuner_id]
-                else:
-                    response[driver_class_name][device_big_id_str].append(tuner_id)
+            for driver_msg in response_msg.drivers:
+                devices = {}
+                for device_msg in driver_msg.devices:
+                    tuner_ids = []
+                    for tuner_id in device_msg.tuner_ids:
+                        tuner_ids.append(tuner_id)
+
+                    devices[device_msg.bdid] = tuner_ids
+
+                response[driver_msg.dcn] = devices
     
             return response
-        except RequestError:
-            raise
         except:
-            message = "Error while trying to find tuning statuses."
+            message = "Error while requesting tuning statuses."
 
             logging.exception(message)
             raise Exception(message)
