@@ -26,10 +26,10 @@ class DriverHandler(GetHandler):
             (driver_cls, device_cls) = available_drivers[dcn]
     
             driver = driver_cls()
-            info = { 'supports_channelscan': \
-                        driver.supports_channelscan,
-                     'tuner_data_type': \
-                        driver.tuner_data_type }
+            info = { 'tune_type': \
+                        driver.tuner_data_type,
+                     'stream_mimetype':
+                        driver.stream_mimetype }
     
             return info
         except:

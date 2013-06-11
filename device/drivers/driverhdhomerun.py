@@ -428,7 +428,7 @@ class DriverHdHomeRun(ITunerDriver):
         """Returns a string that describes the type of device that we handle.
         """
         
-        return """HDHomeRun network-attached tuners."""
+        return """HDHomeRun network-attached tuners. Tunes using a v-channel."""
 
     @property
     def transport_info(self):
@@ -471,4 +471,4 @@ class DriverHdHomeRun(ITunerDriver):
 
     @property
     def stream_mimetype(self):
-        return "video/mpeg2"
+        return "video/mpegts"
