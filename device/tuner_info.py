@@ -36,13 +36,22 @@ class TunerInfo(IDictable):
             logging.exception("Could not capture to file [%s]." % (file_path))
             raise
 
-    def tune(self, param):
+    def set_tune(self, param, host):
         """A utility function to initiate a tune."""
 
         try:
-            return self.device.driver.tune(self, param)
+            return self.device.driver.set_tune(self, param, host)
         except:
             logging.exception("Could not tune with parameter [%s]." % (param))
+            raise
+
+    def clear_tune(self):
+        """A utility function to initiate a tune."""
+
+        try:
+            return self.device.driver.clear_tune(self)
+        except:
+            logging.exception("Could not clear current tune: %s" % (self))
             raise
 
     def is_allocated(self):

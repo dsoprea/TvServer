@@ -730,7 +730,31 @@ class DriverDvbChar(ITunerDriver):
 
         return (True, get_last_state())
 
-    def tune(self, tuner, cc_record=None):
+    def clear_tune(self, tuner):
+        logging.info("Tuning using tuner [%s] on device [%s]." %
+                     (tuner, tuner.device))
+
+        key = (tuner.device.identifier, tuner.tuner_index)
+
+        # If a channel is already tuned on the given tuner, cancel it, first.
+        if key not in self.__tuned:
+            return
+
+        (msg_queue, tune, last_state) = self.__tuned[key]
+
+        try:
+            tune.cancel()
+        except Exception as e:
+            logging.exception("Could not cancel tune on [%s]: %s" %
+                              (tuner, e))
+            raise
+
+        tuner.tune_data = None
+        del self.__tuned[key]
+
+        logging.info("Tuner-state cleared.")
+
+    def set_tune(self, tuner, cc_record, target):
         """Set the vchannel on the given tuner to the given channel data. If 
         not given, clear state of the tuner.
         """
@@ -740,37 +764,21 @@ class DriverDvbChar(ITunerDriver):
 
         key = (tuner.device.identifier, tuner.tuner_index)
 
-        # If a channel is already tuned on the given tuner, cancel it, first.
-        if key in self.__tuned:
-            (msg_queue, tune, last_state) = self.__tuned[key]
-
-            try:
-                tune.cancel()
-            except Exception as e:
-                logging.exception("Could not cancel tune on [%s]: %s" %
-                                  (tuner, e))
-                raise
-
-            tuner.tune_data = None
-            del self.__tuned[key]
-
+        self.clear_tune(tuner)
         tuner.tune_data = cc_record
 
-        if cc_record is not None:
-            queue = Queue()
-            tune = _TuneChannel(tuner, queue)
+        queue = Queue()
+        tune = _TuneChannel(tuner, queue)
 
-            self.__tuned[key] = [queue, tune, TS_1_INITIAL]
-            tune.start()
+        self.__tuned[key] = [queue, tune, TS_1_INITIAL]
+        tune.start()
 
 # TODO: Make sure that the tuning process' information is cleaned-up properly.
 # TODO: Make sure that the check_tuning_status() calls correctly determine the current state of the tuning process.
 # TODO: Emit status standardized tuning-status messages.
 
-            logging.info("Tune operation started in separate process:\n%s" %
-                         (tuner.tune_data))
-        else:
-            logging.info("Tuner-state cleared.")
+        logging.info("Tune operation started in separate process:\n%s" %
+                     (tuner.tune_data))
 
     def __build_panels(self, panel_name_generator, notice_box, for_device):
         """Put together the panels required for additional device configuration

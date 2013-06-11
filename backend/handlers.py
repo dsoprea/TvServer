@@ -40,7 +40,7 @@ class Handlers(object):
         btid = message.tuning_bigid
 
         tuner = TunerInfo.build_from_id(btid)
-        tuner.tune(None)
+        tuner.clear_tune()
 
         response = generalresponse()
         response.version = 1
@@ -65,6 +65,8 @@ class Handlers(object):
 
             return response
         
+        target = (message.target.host, message.target.port)
+
         if message.parameter_type == tune.VCHANNEL:
             if driver.tuner_data_type != TD_TYPE_VCHANNEL:
                 response.error_type = 'arguments'
@@ -73,9 +75,9 @@ class Handlers(object):
     
                 return response
 
+            tuner.set_tune(message.vchannel.vchannel, target)
+
             response.success = True
-# TODO: Finish.
-            #tuner.tune(message.vchannel.vchannel)
         elif message.parameter_type == tune.CHANNELSCONF:
             if driver.tuner_data_type != TD_TYPE_CHANNELSCONF:
                 response.error_type = 'arguments'
@@ -91,9 +93,10 @@ class Handlers(object):
                                            vid=msg_cc.video_id,
                                            aid=msg_cc.audio_id,
                                            pid=msg_cc.program_id)
-                               
+
+            tuner.set_tune(cc_record, target)
+
             response.success = True
-            tuner.tune(cc_record)
         else:
             response.error_type = 'arguments'
             response.message = ("Received unexpected data of type [%s] instead"

@@ -51,9 +51,14 @@ class ITunerDriver(IDictable):#, IPanelSource):
     
         raise NotImplementedError()
 
-    def tune(self, tuner, param=None):
+    def set_tune(self, tuner, param, target):
         """Set the vchannel on the given tuner with the given parameter, which
         depends on the value of tuner_data_type."""
+    
+        raise NotImplementedError()
+
+    def clear_tune(self, tuner):
+        """Stop the given currently-tuned tuner."""
     
         raise NotImplementedError()
 

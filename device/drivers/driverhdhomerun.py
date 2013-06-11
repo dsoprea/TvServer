@@ -370,20 +370,42 @@ class DriverHdHomeRun(ITunerDriver):
 #    
 #        pass
 
-    def tune(self, tuner, vchannel_scalar=None):
+    def set_tune(self, tuner, vchannel_scalar, target):
         """Set the vchannel on the given tuner to the given scalar."""
 
 # TODO: Finish support for vchannel_scalar being None.    
         hd = self.__get_hd(tuner)
 
+        (host, ip) = target
+        target_uri = ('rtp://%s:%d' % (host, ip))
+
+        query = self.HdhrDeviceQuery(hd)
+
         try:
-            self.HdhrDeviceQuery(hd).set_tuner_vchannel(vchannel_scalar)
+            query.set_tuner_vchannel(vchannel_scalar)
+            query.set_tuner_target(target_uri)
         except:
-            logging.exception("Could not set vchannel to (%d)." % 
-                              (vchannel_scalar))
+            logging.exception("Could not tune with tuner [%s] to [%s] with a "
+                              "target of [%s]." % 
+                              (tuner, vchannel_scalar, target_uri))
             raise
 
         tuner.vchannel = vchannel_scalar
+
+    def clear_tune(self, tuner):
+        """Set the vchannel on the given tuner to the given scalar."""
+
+        hd = self.__get_hd(tuner)
+
+        try:
+# TODO: We actually have to send None into the target command.
+            self.HdhrDeviceQuery(hd).set_tuner_target(None)
+        except:
+            logging.exception("Could not clear tune on HDHR for tuner: %s" % 
+                              (tuner))
+            raise
+
+        tuner.vchannel = None
 
     def generate_panels(self, panel_name_generator, notice_box, for_device):
         """If this driver needs specific global configuration settings in order 
@@ -442,13 +464,11 @@ class DriverHdHomeRun(ITunerDriver):
         return True
 
     @property
-    def stream_mimetype(self):
-        return "video/mpeg2"
-
-    @property
     def tuner_data_type(self):
         """Returns one of the TD_TYPE_* values (above)."""
 
-        raise TD_TYPE_VCHANNEL 
+        return TD_TYPE_VCHANNEL 
 
-
+    @property
+    def stream_mimetype(self):
+        return "video/mpeg2"

@@ -49,33 +49,41 @@ class TunerHandler(GetHandler):
             logging.exception(message)
             raise Exception(message)
 
-    def tunevc(self, tid, vc):
+    def tunevc(self, tid, thost, tport, vc):
         """Tune a channel on a device requiring a single virtual-channel."""
 
         try:
             tuner = TunerInfo.build_from_id(tid)
             
-            if tuner.is_allocated() is False:
-                raise TunerNotAllocated("Tuner is either not valid or not "
-                                        "allocated.")
-            
             driver = tuner.device.driver
-            if driver.tuner.data_type != TD_TYPE_VCHANNEL:
+            if driver.tuner_data_type != TD_TYPE_VCHANNEL:
                 raise Exception("This interface requires virtual-channel "
                                 "parameters.")
 
-            #tuner.tune(tuner, vc)
-        except TunerNotAllocated:
-            raise
-        except RequestError:
-            raise
+            tune_msg = tune()
+            tune_msg.version = 1
+            tune_msg.tuning_bigid = tid
+            tune_msg.parameter_type = tune.VCHANNEL
+            tune_msg.vchannel.version = 1
+            tune_msg.vchannel.vchannel = int(vc);
+            tune_msg.target.version = 1
+            tune_msg.target.host = thost
+            tune_msg.target.port = int(tport)
+# TODO: the web request handler should only receive responses addressed to that particular thread.
+            # Expect a general_response in responsee.
+            response = self.__client.send_query(tune_msg)
+            
+            if response.success == False:
+                raise Exception("Tune failed: %s" % (response.message))
+            
+            return { "Success": True }
         except:
-            message = "Error while trying to tune (VC)."
+            message = "Error while trying to tune (1)."
             
             logging.exception(message)
             raise Exception(message)
 
-    def tunecc(self, tid, name, freq, mod, vid, aid, pid):
+    def tunecc(self, tid, thost, tport, name, freq, mod, vid, aid, pid):
         """Tune a channel on a device requiring channels-conf data."""
 
         try:
@@ -97,6 +105,9 @@ class TunerHandler(GetHandler):
             tune_msg.channelsconf_record.video_id = int(vid);
             tune_msg.channelsconf_record.audio_id = int(aid);
             tune_msg.channelsconf_record.program_id = int(pid);
+            tune_msg.target.version = 1
+            tune_msg.target.host = thost
+            tune_msg.target.port = tport
 # TODO: the web request handler should only receive responses addressed to that particular thread.
             # Expect a general_response in responsee.
             response = self.__client.send_query(tune_msg)
@@ -106,7 +117,7 @@ class TunerHandler(GetHandler):
             
             return { "Success": True }
         except:
-            message = "Error while trying to tune."
+            message = "Error while trying to tune (2)."
             
             logging.exception(message)
             raise Exception(message)
