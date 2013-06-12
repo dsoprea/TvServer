@@ -13,7 +13,7 @@ class DeviceHdHomeRun(DeviceNetworkAttached):
     __channellist = None
     
     def __init__(self, driver, ip, tuner_quantity, data=None, channellist=None):
-        DeviceNetworkAttached.__init__(self, driver, ip, tuner_quantity, data)
+        super(DeviceHdHomeRun, self).__init__(driver, ip, tuner_quantity, data)
 
         self.__driver = driver
         self.__ip = ip

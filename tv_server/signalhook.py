@@ -15,7 +15,7 @@ class _EventInstance(Thread):
     def __init__(self, event_name, handlers, aggregates, event_data):
         thread_name = ("%s-%f" % (event_name, time()))
         
-        Thread.__init__(self, name=thread_name)
+        super(_EventInstance, self).__init__(name=thread_name)
 
         self.__event_name = event_name
         self.__handlers   = handlers

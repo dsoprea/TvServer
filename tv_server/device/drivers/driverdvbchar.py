@@ -140,13 +140,6 @@ class DeviceDvbChar(TunerDeviceCommon, ITunerDevice):
         return (hash(self) != hash(o))
 
 
-class _ExecuteError(Exception):
-    """There was a failure executing an external command."""
-
-    def __init__(self, retval):
-        Exception.__init__(self, "Command failed with (%d)." % (retval))
-
-
 class _TuneChannel(Process, ManagedRoutine):
     """The multiprocessing process that invokes the external utilities to tune
     channels.
@@ -158,11 +151,11 @@ class _TuneChannel(Process, ManagedRoutine):
 
     def __init__(self, tuner, msg_queue):
         name = ('TuneChannel-%s' % (str(tuner)))
-        super(_TuneChannel, self).__init__(name=name)
-
 # TODO: Reimplement priorities later.
 # routine_close_priority.P_TUNING_THREAD
         priority = 10
+
+        Process.__init__(self, name=name)
         ManagedRoutine.__init__(self, name, priority)
 
         self.__tuner        = tuner
