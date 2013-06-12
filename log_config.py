@@ -11,7 +11,7 @@ formatter = Formatter(log_format)
 #log_syslog.setFormatter(formatter)
 #default_logger.addHandler(log_syslog)
 
-log_file = FileHandler('/tmp/tv_backend.log')
+log_file = FileHandler('/tmp/tv_server.log')
 log_file.setFormatter(formatter)
 #log_file.setLevel(DEBUG)
 default_logger.addHandler(log_file)

@@ -1,8 +1,5 @@
-from threading import Lock, RLock
+from threading import RLock
 
-#from rain_config import values
-
-#from rain.common.modules import cf
 from interfaces.device.ituner import ITuner
 from interfaces.device.ituner import A_ALLOCATED, A_RELEASED, \
                                      TUNER_ACTIVITY_TYPES
@@ -16,15 +13,10 @@ class Tuner(ITuner):
     """Manages allocated and available the individual tuners of every device.
     """
 
-    #__device_store = None
     __default_index = 0
 
     def __init__(self):
-        #self.__device_store = cf.get(values.C_DEV_STORAGE)
-
-        # Tuner: (allocation_data, [<listeners>])
         self.__allocations = {}
-
         self.__global_listeners = []
 
         self.update_tuners()
@@ -72,7 +64,7 @@ class Tuner(ITuner):
                with_device not in self.__allocations:
                 # For each device, allow for tuner-info (set when allocated), 
                 # allocation-data, along with a list of event listeners.
-# TODO: Add a hash function to the device and driver classes.
+
                 self.__allocations[with_device] = []
                 for tuner_index in xrange(with_device.tuner_quantity):
                     self.__allocations[with_device].append([None, None, []])

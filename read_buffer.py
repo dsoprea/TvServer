@@ -13,7 +13,6 @@ class ReadBuffer(object):
     """
 
     __locker = RLock()
-# TODO: Reduce this for testing.
     __cleanup_interval = 100
     
     def __init__(self):

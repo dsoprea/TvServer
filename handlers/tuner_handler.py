@@ -30,12 +30,12 @@ class TunerHandler(GetHandler):
         if response.success == False:
             raise RequestError("Acquire failed: %s" % (response.message))
         
-        return { 'tid': response.tuning_bigid }
+        return { 'btid': response.tuning_bigid }
 
-    def tunevc(self, tid, thost, tport, vc):
+    def tunevc(self, btid, thost, tport, vc):
         """Tune a channel on a device requiring a single virtual-channel."""
 
-        tuner = TunerInfo.build_from_id(tid)
+        tuner = TunerInfo.build_from_id(btid)
         
         driver = tuner.device.driver
         if driver.tuner_data_type != TD_TYPE_VCHANNEL:
@@ -44,14 +44,14 @@ class TunerHandler(GetHandler):
 
         tune_msg = tune()
         tune_msg.version = 1
-        tune_msg.tuning_bigid = tid
+        tune_msg.tuning_bigid = btid
         tune_msg.parameter_type = tune.VCHANNEL
         tune_msg.vchannel.version = 1
         tune_msg.vchannel.vchannel = int(vc);
         tune_msg.target.version = 1
         tune_msg.target.host = thost
         tune_msg.target.port = int(tport)
-# TODO: the web request handler should only receive responses addressed to that particular thread.
+
         # Expect a general_response in responsee.
         response = self.__client.send_query(tune_msg)
         
@@ -60,19 +60,27 @@ class TunerHandler(GetHandler):
         
         return { "Success": True }
 
-    def tunecc(self, tid, thost, tport, name, freq, mod, vid, aid, pid):
+    def tuneccshort(self, btid, thost, tport, cc):
         """Tune a channel on a device requiring channels-conf data."""
 
-        tuner = TunerInfo.build_from_id(tid)
+        tuner = TunerInfo.build_from_id(btid)
         
         driver = tuner.device.driver
         if driver.tuner_data_type != TD_TYPE_CHANNELSCONF:
             raise RequestError("This interface required channels-conf "
                                "parameters.")
             
+        cc_parts = cc.split(':')
+        
+        if len(cc_parts) < 6:
+            raise RequestError("The CC string should have six colon-separated "
+                               "parts.")
+        
+        (name, freq, mod, vid, aid, pid) = cc_parts 
+            
         tune_msg = tune()
         tune_msg.version = 1
-        tune_msg.tuning_bigid = tid
+        tune_msg.tuning_bigid = btid
         tune_msg.parameter_type = tune.CHANNELSCONF
         tune_msg.channelsconf_record.version = 1
         tune_msg.channelsconf_record.name = name;
@@ -83,8 +91,41 @@ class TunerHandler(GetHandler):
         tune_msg.channelsconf_record.program_id = int(pid);
         tune_msg.target.version = 1
         tune_msg.target.host = thost
-        tune_msg.target.port = tport
-# TODO: the web request handler should only receive responses addressed to that particular thread.
+        tune_msg.target.port = int(tport)
+
+        # Expect a general_response in responsee.
+        response = self.__client.send_query(tune_msg)
+        
+        if response.success == False:
+            raise RequestError("Tune failed: %s" % (response.message))
+        
+        return { "Success": True }
+
+    def tunecclong(self, btid, thost, tport, name, freq, mod, vid, aid, pid):
+        """Tune a channel on a device requiring channels-conf data."""
+
+        tuner = TunerInfo.build_from_id(btid)
+        
+        driver = tuner.device.driver
+        if driver.tuner_data_type != TD_TYPE_CHANNELSCONF:
+            raise RequestError("This interface required channels-conf "
+                               "parameters.")
+            
+        tune_msg = tune()
+        tune_msg.version = 1
+        tune_msg.tuning_bigid = btid
+        tune_msg.parameter_type = tune.CHANNELSCONF
+        tune_msg.channelsconf_record.version = 1
+        tune_msg.channelsconf_record.name = name;
+        tune_msg.channelsconf_record.frequency = int(freq);
+        tune_msg.channelsconf_record.modulation = mod;
+        tune_msg.channelsconf_record.video_id = int(vid);
+        tune_msg.channelsconf_record.audio_id = int(aid);
+        tune_msg.channelsconf_record.program_id = int(pid);
+        tune_msg.target.version = 1
+        tune_msg.target.host = thost
+        tune_msg.target.port = int(tport)
+
         # Expect a general_response in responsee.
         response = self.__client.send_query(tune_msg)
         

@@ -90,8 +90,6 @@ class Client(object):
 
         i = 0
         while i < (len(data) - 1):
-# TODO: There's no chance that we're going to be receiving the very bytes that
-#       we sent, right?
             num_sent = s.send(data[i:])
             i += num_sent
         

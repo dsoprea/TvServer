@@ -68,26 +68,6 @@ class DeviceHdHomeRun(DeviceNetworkAttached):
 
         return self.__ll_device.tuner_count
 
-    @property
-    def supported_channelliststypes(self):
-        """Return the support channel-list classes that we support for tuning.
-        """
-        
-        return [channel_config.LT_SCAN]
-
-    @property
-    def channellist(self):
-        """Return an instance of the IChannelList that we currently tune with.
-        """
-    
-        raise self.__channellist
-
-    @channellist.setter
-    def channellist(self, channellist):
-        """Set a new instance of an IChannelList to tune with."""
-
-        self.__channellist = channellist
-
     def __hash__(self):
         return hash(self.identifier)
 
@@ -257,114 +237,7 @@ class DriverHdHomeRun(ITunerDriver):
                               "[%s]." % (device_str))
             raise
 
-    def iterate_channels_start(self, device, tuner_index, channel_map):
-        """Establish the initial state information for a channel-scan. As 
-        opposed to the generator function, this allows the caller to stash the
-        state value and each, next, successive channel at some unspecified time
-        in the future. Returns a blackbox state object.
-        """
-
-        logging.info("Initializing channel-scan state.")
-
-        tuner = TunerInfo(device, tuner_index)
-        hd = self.__get_hd(tuner)
-        device_query = self.HdhrDeviceQuery(hd)
-
-        scan_info = device_query.iterate_channels_start(channel_map)
-
-        return (device_query, scan_info)
-
-    def iterate_channels_next(self, state):
-        """Take the object returned by iterate_channels_start and scan the next
-        channel. Returns False if done, None if channel is to be skipped, or
-        "(progress_int, ChannelInfo, <ProgramInfo[]>)" if channel successfully 
-        locked.
-        """
-
-        (device_query, scan_info) = state
-
-        logging.debug("Proceeding to next in channel-scan.  PROGRESS= "
-                      "(%d)/(%s)" % (scan_info['current'], scan_info['count']))
-
-        try:
-            result = device_query.iterate_channels_next(scan_info)
-        except:
-            logging.exception("Exception while iterating the channel during a "
-                              "scan.")
-            raise
-        
-        # Scan is finished.
-        if result == False:
-            logging.error("Channel-scan has finished (driverhdhomerun).")
-            return (False,)
-        
-        progress = int(float(scan_info['current']) / float(scan_info['count']) * 100.0)
-
-        # Channel could not be locked or was empty of programs.
-        if result == None or not result.programs:
-            logging.debug("No programs found.")
-            return (progress,)
-
-        channel_data = result
-
-        raw_id = channel_data.channel_str
-        channel_id = int(raw_id[raw_id.find(':') + 1:])
-        channel_info = ChannelInfo(channel_id, 
-                                   channel_data.channel_str, 
-                                   int(channel_data.frequency)
-                                  )
-
-        programs = []
-        i = 0
-        for i in xrange(channel_data.program_count):
-            program_raw = channel_data.programs[i]
-
-            #define HDHOMERUN_CHANNELSCAN_PROGRAM_NORMAL 0
-            #define HDHOMERUN_CHANNELSCAN_PROGRAM_NODATA 1
-            #define HDHOMERUN_CHANNELSCAN_PROGRAM_CONTROL 2
-            #define HDHOMERUN_CHANNELSCAN_PROGRAM_ENCRYPTED 3
-            if program_raw.type not in [0, 3]:
-                continue
-# TODO: Make sure we only store values available from any ATSC tuner.
-
-            program_info = ProgramInfo(channel_id, 
-                                       int(program_raw.virtual_major), 
-                                       int(program_raw.program_number), 
-                                       int(program_raw.virtual_major), 
-                                       int(program_raw.virtual_minor), 
-                                       program_raw.name,
-                                       i,
-                                       int(program_raw.type),
-                                      )
-
-            programs.append(program_info)
-            i += 1
-
-        if not programs:
-            # It turns out that there were no usable programs.
-            logging.debug("No programs were actually found.")
-            return (progress,)
-
-        logging.debug("(%d) acceptable programs found on this channel." % 
-                      (len(programs)))
-
-        return (progress, channel_info, programs)
-
-    def capture_to_file(self, tuner, file_path, quality):
-        """Start streaming and storing directly to a file. Used primarily for
-        testing. The 'quality' parameter indicates what level of quality to
-        return if there's a choice. This is mostly for bandwidth conservation,
-        if there's an opportunity.
-        """
-    
-        hd = self.__get_hd(tuner)
-
-        try:
-            return self.HdhrVideo(hd).stream_to_file(file_path)
-        except:
-            logging.exception("Could not capture to file [%s]." % (file_path))
-            raise
-
+# TODO: Finish.
 #    def check_tuning_status(self, tuner):
 #        """Determine if the channel is still tuned properly."""
 #    
@@ -373,7 +246,6 @@ class DriverHdHomeRun(ITunerDriver):
     def set_tune(self, tuner, vchannel_scalar, target):
         """Set the vchannel on the given tuner to the given scalar."""
 
-# TODO: Finish support for vchannel_scalar being None.    
         hd = self.__get_hd(tuner)
 
         (host, ip) = target
@@ -398,7 +270,6 @@ class DriverHdHomeRun(ITunerDriver):
         hd = self.__get_hd(tuner)
 
         try:
-# TODO: We actually have to send None into the target command.
             self.HdhrDeviceQuery(hd).set_tuner_target(None)
         except:
             logging.exception("Could not clear tune on HDHR for tuner: %s" % 
@@ -406,16 +277,6 @@ class DriverHdHomeRun(ITunerDriver):
             raise
 
         tuner.vchannel = None
-
-    def generate_panels(self, panel_name_generator, notice_box, for_device):
-        """If this driver needs specific global configuration settings in order 
-        to tune or whatnot, return a list of additional panels. If any 
-        panel expressions do not have a '_next' component, it will be defaulted
-        to whatever 'return_to_panel' is, above. Any data that is to be stored
-        should be set on persisted_data (a dictionary).
-        """
-
-        return None
 
     @property
     def name(self):
@@ -429,39 +290,6 @@ class DriverHdHomeRun(ITunerDriver):
         """
         
         return """HDHomeRun network-attached tuners. Tunes using a v-channel."""
-
-    @property
-    def transport_info(self):
-        """Returns a description of the media stream."""
-
-# TODO: Map this from the stream.
-
-        raise NotImplementedError()
-#        video_info = VideoInfo(constants.M_VID_MPEG2)
-#        audio_info_english = AudioInfo(constants.LANG_ENGLISH, constants.M_AUD_AC3)
-#        audio_info_spanish = AudioInfo(constants.LANG_SPANISH, constants.M_AUD_AC3)
-#        subtitle_info = SubtitleInfo(constants.LANG_ENGLISH, '<abc>')
-#
-#        container_name = ContainerInfo(                 \
-#                            constants.M_CHANNEL_MPEGTS, \
-#                            { 0: video_info },          \
-#                            { 1: video_info_english,    \
-#                              2: video_info_spanish     \
-#                            },                          \
-#                            { 3: subtitle_info }        \
-#                           )
-#        
-#        return container_name
-
-    @property
-    def supports_channelscan(self):
-        """Returns a boolean expressing whether a channel-scan is both 
-        supported and required. A driver that doesn't support a manual channel-
-        scan must have some other method of determining channels, such as 
-        having been given a channels.conf file.
-        """
-        
-        return True
 
     @property
     def tuner_data_type(self):

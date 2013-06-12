@@ -12,12 +12,11 @@ from pyzap.calls import c_azap_tune_silent
 from pyzap.types import TUNER_DESCRIPTOR, ATSC_TUNE_INFO, STATUS_RECEIVER_CB
 from pyzap.constants import modulation
 
-#from rain_config import constants, values, channel_config, \
-#                                routine_close_priority
-
 from interfaces.device.itunerdriver import ITunerDriver, TD_TYPE_CHANNELSCONF
 from interfaces.device.itunerdevice import ITunerDevice
-from interfaces.device.ituner import *
+from interfaces.device.ituner import A_TUNER_INITIAL, A_TUNER_TRYING, \
+                                     A_TUNER_LOCKED, A_TUNER_CANCELLED
+
 from device.tuner_device_common import TunerDeviceCommon
 from device import DeviceDoesNotExist
 
@@ -126,26 +125,6 @@ class DeviceDvbChar(TunerDeviceCommon, ITunerDevice):
         self.__atsc_type = value
 
     @property
-    def supported_channelliststypes(self):
-        """Return the support channel-list classes that we support for tuning.
-        """
-
-        return [channel_config.LT_CHANNELSCONF]
-
-    @property
-    def channellist(self):
-        """Return an instance of the IChannelList that we currently tune with.
-        """
-
-        return self.__channellist
-
-    @channellist.setter
-    def channellist(self, channellist):
-        """Set a new instance of an IChannelList to tune with."""
-
-        self.__channellist = channellist
-
-    @property
     def adapter_index(self):
         return self.__adapter_index
 
@@ -170,8 +149,6 @@ class _ExecuteError(Exception):
         Exception.__init__(self, "Command failed with (%d)." % (retval))
 
 
-# TODO: Update the channels-conf references for our channel-list concept.
-
 class _TuneChannel(Process, ManagedRoutine):
     """The multiprocessing process that invokes the external utilities to tune
     channels.
@@ -195,8 +172,6 @@ class _TuneChannel(Process, ManagedRoutine):
         self.__cancel_event = Event()
 
     def run(self):
-        pydevd.settrace()
-        
         logging.info("Starting tuning process for tuner [%s] on PID (%s)." %
                      (self.__tuner, self.pid))
 
@@ -592,39 +567,7 @@ class DriverDvbChar(ITunerDriver):
 
         return True
 
-    def iterate_channels_start(self, device, tuner_index, channel_map):
-        """We expect a channels.conf file. We don't support a manual-scan."""
-
-        raise NotImplementedError()
-
-    def iterate_channels_next(self, state):
-        """We expect a channels.conf file. We don't support a manual-scan."""
-
-        raise NotImplementedError()
-
-    def capture_to_file(self, tuner, writer):
-        """Start streaming the feed. It is expected that the writer spawns a
-        thread and returns immediately.
-        """
-
-        logging.info("Sending feed from tuner [%s] to writer [%s]." % (tuner,
-                                                                       writer))
-
-        device = tuner.device
-        tuner_index = tuner.tuner_index
-        adapter_filepath = device.junk_data['Adapter']
-
-        dvr_filepath = self.__build_device_filepath(adapter_filepath,
-                                                    tuner_index,
-                                                    DEVICE_DVR)
-
-        try:
-            return writer.fill_from_device_file(dvr_filepath)
-        except:
-            logging.exception("Could not capture to file [%s]." %
-                              (dvr_filepath))
-            raise
-
+# TODO: Test.
     def check_tuning_status(self, tuner):
         """Return a 2-tuple of a boolean indicating if the tuning is still
         active, and the last state, if True.
@@ -775,103 +718,10 @@ class DriverDvbChar(ITunerDriver):
 
 # TODO: Make sure that the tuning process' information is cleaned-up properly.
 # TODO: Make sure that the check_tuning_status() calls correctly determine the current state of the tuning process.
-# TODO: Emit status standardized tuning-status messages.
+# TODO: Emit standardized tuning-status messages.
 
         logging.info("Tune operation started in separate process:\n%s" %
                      (tuner.tune_data))
-
-    def __build_panels(self, panel_name_generator, notice_box, for_device):
-        """Put together the panels required for additional device configuration
-        after device-detection.
-        """
-
-#        tuning_info_panel_name = panel_name_generator('TuningInfo')
-        atsc_type_panel_name = panel_name_generator('AtscType')
-
-        def post_callback(sw, key, result, expression, screen):
-            button = result['button']
-            is_esc = result['is_esc']
-
-            # They cancelled.
-            if is_esc or is_button(button, B_CANCEL):
-                raise GotoPanelException('pick_driver')
-
-            type_mapping = {
-                    B_ADAPTER_TYPE_ATSC: constants.ADAPTER_TYPE_ATSC,
-                    B_ADAPTER_TYPE_DVBT: constants.ADAPTER_TYPE_DVBT,
-                    B_ADAPTER_TYPE_DVBC: constants.ADAPTER_TYPE_DVBC,
-                    B_ADAPTER_TYPE_DVBS: constants.ADAPTER_TYPE_DVBS,
-                }
-
-            atsc_type = None
-            for this_button, this_adapter_type in type_mapping.iteritems():
-                if is_button(button, this_button):
-                    atsc_type = this_adapter_type
-
-            if not atsc_type:
-                raise Exception("Could not determine adapter type from button "
-                                "[%s]." % (button))
-
-        title = ('Adapter Info 2 (%s)' % (for_device.address))
-
-        # _next will be set automatically, after generate_panels() is called.
-        atsc_type_panel = { '_widget':    'choice',
-                            '_name':      atsc_type_panel_name,
-                            '_next':      None,
-                            'title':      title,
-                            'text':       'Please choice adapter type.',
-                            'buttons':    [ B_ADAPTER_TYPE_ATSC,
-                                            B_ADAPTER_TYPE_DVBT,
-                                            B_ADAPTER_TYPE_DVBC,
-                                            B_ADAPTER_TYPE_DVBS,
-                                          ],
-                            '_post_cb':   post_callback,
-                          }
-
-        def posthook(device, flat_results):
-            """Receive the results from the driver-specific config panels. Set
-            the information on the device that required user input.
-            """
-
-#            (tuning_info_results, atsc_type_results) = flat_results
-            (atsc_type_results,) = flat_results
-
-            atsc_type_button = atsc_type_results['button']
-
-            if is_button(atsc_type_button, B_ADAPTER_TYPE_ATSC):
-                atsc_type = constants.ADAPTER_TYPE_ATSC
-            elif is_button(atsc_type_button, B_ADAPTER_TYPE_DVBT):
-                atsc_type = constants.ADAPTER_TYPE_DVBT
-            elif is_button(atsc_type_button, B_ADAPTER_TYPE_DVBC):
-                atsc_type = constants.ADAPTER_TYPE_DVBC
-            elif is_button(atsc_type_button, B_ADAPTER_TYPE_DVBS):
-                atsc_type = constants.ADAPTER_TYPE_DVBS
-            else:
-                raise Exception("Could not map selected button [%s] to a ATSC "
-                                "type." % (atsc_type_button))
-
-            device.atsc_type             = atsc_type
-
-#        panels = [tuning_info_panel, atsc_type_panel]
-        panels = [atsc_type_panel]
-        return (panels, atsc_type_panel, atsc_type_panel, posthook)
-
-    def generate_panels(self, panel_name_generator, notice_box, for_device):
-        """If this driver needs specific global configuration settings in order
-        to tune or whatnot, return a list of additional panels. If any
-        panel expressions do not have a '_next' component, it will be defaulted
-        to whatever 'return_to_panel' is, above. Any data that is to be stored
-        should be set on persisted_data (a dictionary).
-        """
-
-        try:
-            result = self.__build_panels(panel_name_generator, notice_box,
-                                         for_device)
-        except:
-            logging.exception("Could not build configuration panels.")
-            raise
-
-        return result
 
     def __get_adapters(self):
         """We expect a device path like '/dev/dvb/adapter0', and return a list
@@ -1005,39 +855,6 @@ class DriverDvbChar(ITunerDriver):
 
         return "Read from a /dev/dvb/adapter<n> device using channels.conf " \
                "data passed via parameters."
-
-    @property
-    def transport_info(self):
-        """Returns a description of the media stream."""
-
-# TODO: Map this from the stream.
-
-        raise NotImplementedError()
-#        video_info = VideoInfo(constants.M_VID_MPEG2)
-#        audio_info_english = AudioInfo(constants.LANG_ENGLISH, constants.M_AUD_AC3)
-#        audio_info_spanish = AudioInfo(constants.LANG_SPANISH, constants.M_AUD_AC3)
-#        subtitle_info = SubtitleInfo(constants.LANG_ENGLISH, '<abc>')
-#
-#        container_name = ContainerInfo(                 \
-#                            constants.M_CHANNEL_MPEGTS, \
-#                            { 0: video_info },          \
-#                            { 1: video_info_english,    \
-#                              2: video_info_spanish     \
-#                            },                          \
-#                            { 3: subtitle_info }        \
-#                           )
-#
-#        return container_name
-
-    @property
-    def supports_channelscan(self):
-        """Returns a boolean expressing whether a channel-scan is both
-        supported and required. A driver that doesn't support a manual channel-
-        scan must have some other method of determining channels, such as
-        having been given a channels.conf file.
-        """
-
-        return False
 
     @property
     def tuner_data_type(self):

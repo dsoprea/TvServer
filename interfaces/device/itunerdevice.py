@@ -28,7 +28,7 @@ class ITunerDevice(object):
         """Returns the number of tuners available on the device."""
         
         raise NotImplementedError()
-        
+# TODO: Deimplement junk_data.
     @property
     def junk_data(self):
         """Returns an object of an unspecified type that the driver knows how 
@@ -41,26 +41,6 @@ class ITunerDevice(object):
     def __cmp__(self, o):
         """Returns 0 if <self> equals <o>, and -1 otherwise."""
     
-        raise NotImplementedError()
-
-    @property
-    def supported_channelliststypes(self):
-        """Return the support channel-list classes that we support for tuning.
-        """
-        
-        raise NotImplementedError()
-
-    @property
-    def channellist(self):
-        """Return an instance of the IChannelList that we currently tune with.
-        """
-    
-        raise NotImplementedError()
-
-    @channellist.setter
-    def channellist(self, channellist):
-        """Set a new instance of an IChannelList to tune with."""
-
         raise NotImplementedError()
 
     def __hash__(self):

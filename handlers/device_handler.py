@@ -1,8 +1,5 @@
-import logging
-
-from handlers import GetHandler, RequestError
+from handlers import GetHandler
 from device.drivers import available_drivers, get_big_id_from_device
-#from cache import Cache
 
 # TODO: Move request handling logic to backend. 
 
@@ -24,7 +21,5 @@ class DeviceHandler(GetHandler):
 
             big_device_id = get_big_id_from_device(device)
             devices[repr(big_device_id)] = device_info
-
-#            Cache().set(str("tv-drivers-%s-devices" % (dcn)), devices, 3600)
 
         return devices
