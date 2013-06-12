@@ -1,0 +1,38 @@
+package tvserver;
+
+message tune {
+    enum parameter_type_e {
+        VCHANNEL = 0;
+        CHANNELSCONF = 1;
+    }
+
+    message vchannel_m {
+        required uint32 version = 1;
+        optional uint32 vchannel = 2;
+    }
+    
+    message channels_conf_record_m {
+        required uint32 version = 1;
+        optional string name = 2;
+        optional uint32 frequency = 3;
+        optional string modulation = 4;
+        optional uint32 video_id = 5;
+        optional uint32 audio_id = 6;
+        optional uint32 program_id = 7;
+    }
+
+    message target_m {
+        required uint32 version = 1;
+        optional string host = 2;
+        optional int32 port = 3;
+    }
+    
+    required uint32 version = 1;
+    optional string tuning_bigid = 2;
+
+    optional parameter_type_e parameter_type = 3;
+    optional vchannel_m vchannel = 4;
+    optional channels_conf_record_m channelsconf_record = 5;
+    optional target_m target = 6;
+}
+

@@ -1,0 +1,5 @@
+message error {
+    required uint32 version = 1;
+    optional string type = 2;
+    optional string message = 3;
+}

@@ -1,0 +1,21 @@
+message devicestatus {
+    required uint32 version = 1;
+}
+
+message devicestatusresponse {
+    required uint32 version = 1;
+
+    message device {
+        required uint32 version = 1;
+        optional string bdid = 2;
+        repeated string tuner_ids = 3;
+    }
+    
+    message driver {
+        required uint32 version = 1;
+        optional string dcn = 2;
+        repeated device devices = 3;
+    }
+
+    repeated driver drivers = 2;
+}
