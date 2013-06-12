@@ -1,3 +1,0 @@
-class IRecordings(object):
-    pass
-

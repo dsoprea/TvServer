@@ -1,3 +1,0 @@
-python-memcached
-Twisted
-web.py
