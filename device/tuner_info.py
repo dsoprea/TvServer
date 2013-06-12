@@ -15,6 +15,7 @@ from device.drivers import get_device_from_big_id, get_big_id_from_device
 from logging import getLogger
 logging = getLogger(__name__)
 
+
 class TunerInfo(IDictable):
     """Tracks state of a specific tuner on a specific device."""
 
@@ -43,15 +44,6 @@ class TunerInfo(IDictable):
             return self.device.driver.set_tune(self, param, host)
         except:
             logging.exception("Could not tune with parameter [%s]." % (param))
-            raise
-
-    def clear_tune(self):
-        """A utility function to initiate a tune."""
-
-        try:
-            return self.device.driver.clear_tune(self)
-        except:
-            logging.exception("Could not clear current tune: %s" % (self))
             raise
 
     def is_allocated(self):
@@ -146,7 +138,8 @@ class TunerInfo(IDictable):
 
     def __hash__(self):
         return ('%s:%s:%s' % 
-                (self.__device.identifier, self.__tuner_index, 
+                (self.__device.identifier, 
+                 self.__tuner_index, 
                  self.__tune_data if self.__tune_data is not None else ''))
 
     def __eq__(self, o):

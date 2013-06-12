@@ -36,12 +36,13 @@ class ReadBuffer(object):
         """
 
         with self.__class__.__locker:
-            result = self.__passive_read(12)
+            result = self.__passive_read(4 * 7)
             if result is None:
                 return None
 
-            (three_dwords, last_buffer_index, updates1) = result
-            (length, msg_type, marker_head) = unpack('>III', three_dwords)
+            (header, last_buffer_index, updates1) = result
+            (length, from_thread_id, to_thread_id, msg_type, marker_head) = \
+                unpack('>IQQII', header)
 
             result = self.__passive_read(length + 4, last_buffer_index)
             if result is None:
@@ -75,7 +76,7 @@ class ReadBuffer(object):
         message = cls()
         message.ParseFromString(data[:-4])
         
-        return message
+        return (message, from_thread_id, to_thread_id)
 
     def __passive_read(self, length, start_buffer_index=None):
         """Read the given length of bytes, or return None if we can't provide 

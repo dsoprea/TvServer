@@ -40,7 +40,7 @@ class Handlers(object):
         btid = message.tuning_bigid
 
         tuner = TunerInfo.build_from_id(btid)
-        tuner.clear_tune()
+        self.__tuner.release_tuner(tuner)
 
         response = generalresponse()
         response.version = 1

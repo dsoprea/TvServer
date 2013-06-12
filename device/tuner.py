@@ -317,9 +317,11 @@ class Tuner(ITuner):
             if tuner_info is None:
                 return False
 
-            # Clear allocation.
-            entry[0] = None
+            tuner_info.device.driver.clear_tune(tuner_info)
 
+            # Clear allocation.
+            self.__allocations[tuner_info.device][tuner_info.tuner_index][0] = None
+            
             try:
                 self.__touch_listeners(A_RELEASED, specific_tuner, \
                                        allocation_data)

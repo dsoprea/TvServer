@@ -22,13 +22,16 @@ class WaitForQueries(protocol.Protocol):
         try:
             self.__buffer.push(data)
 
-            message = self.__buffer.read_message()
-            if message is None:
+            message_tuple = self.__buffer.read_message()
+            if message_tuple is None:
                 return
+
+            (message, from_thread_id, to_thread_id) = message_tuple
 
             # Send the message to a handling method named similarly. If it
             # returns something other than NULL, we assume that its a message
-            # to be serialized and written back.
+            # to be serialized and written back. Only the client observes the
+            # "to_thread_id" value.
 
             message_type_name = message.__class__.__name__
             handle_method = ('handle%s' % (message_type_name.capitalize()))
@@ -37,7 +40,7 @@ class WaitForQueries(protocol.Protocol):
             if response is None:
                 return
 
-            raw_message = serialize_message(response)
+            raw_message = serialize_message(response, from_thread_id)
             self.transport.write(raw_message)
 
 #        self.transport.loseConnection()
