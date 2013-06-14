@@ -30,8 +30,8 @@ class Client(object):
         
         # Read data from the server, and push into the buffer. Once no more
         # data is readily available, sift [any] buffered messages.
-        with cls.__locker_buffer:
-            while 1:
+        while 1:
+            with cls.__locker_buffer:
                 try:
                     data = s.recv(backend_block_size_bytes)
                 except socket.timeout:
