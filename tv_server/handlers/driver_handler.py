@@ -1,7 +1,7 @@
 from tv_server.handlers import GetHandler, RequestError
 from tv_server.backend.client import Client
-from tv_server.backend.protocol.driverlist_pb2 import driverlist
-from tv_server.backend.protocol.driverinfo_pb2 import driverinfo
+from tv_server.backend.protocol.driver_list_pb2 import driver_list
+from tv_server.backend.protocol.driver_info_pb2 import driver_info
 from tv_server.backend.protocol.error_pb2 import error
 
 
@@ -11,7 +11,7 @@ class DriverHandler(GetHandler):
         self.__client = Client()
         
     def list(self):
-        driverlist_msg = driverlist()
+        driverlist_msg = driver_list()
         driverlist_msg.version = 1
 
         response = self.__client.send_query(driverlist_msg)
@@ -26,7 +26,7 @@ class DriverHandler(GetHandler):
         return distilled
 
     def info(self, dcn):
-        driverinfo_msg = driverinfo()
+        driverinfo_msg = driver_info()
         driverinfo_msg.version = 1
         driverinfo_msg.dcn = dcn
 

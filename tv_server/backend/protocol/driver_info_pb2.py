@@ -9,29 +9,29 @@ from google.protobuf import descriptor_pb2
 
 
 DESCRIPTOR = descriptor.FileDescriptor(
-  name='driverinfo.proto',
-  package='',
-  serialized_pb='\n\x10\x64riverinfo.proto\"*\n\ndriverinfo\x12\x0f\n\x07version\x18\x01 \x02(\r\x12\x0b\n\x03\x64\x63n\x18\x02 \x01(\t\"b\n\x12\x64riverinforesponse\x12\x0f\n\x07version\x18\x01 \x02(\r\x12\x0f\n\x07success\x18\x02 \x01(\x08\x12\x11\n\ttune_type\x18\x03 \x01(\t\x12\x17\n\x0fstream_mimetype\x18\x04 \x01(\t')
+  name='driver_info.proto',
+  package='tvserver',
+  serialized_pb='\n\x11\x64river_info.proto\x12\x08tvserver\"+\n\x0b\x64river_info\x12\x0f\n\x07version\x18\x01 \x02(\r\x12\x0b\n\x03\x64\x63n\x18\x02 \x01(\t\"c\n\x13\x64river_inforesponse\x12\x0f\n\x07version\x18\x01 \x02(\r\x12\x0f\n\x07success\x18\x02 \x01(\x08\x12\x11\n\ttune_type\x18\x03 \x01(\t\x12\x17\n\x0fstream_mimetype\x18\x04 \x01(\t')
 
 
 
 
-_DRIVERINFO = descriptor.Descriptor(
-  name='driverinfo',
-  full_name='driverinfo',
+_DRIVER_INFO = descriptor.Descriptor(
+  name='driver_info',
+  full_name='tvserver.driver_info',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   fields=[
     descriptor.FieldDescriptor(
-      name='version', full_name='driverinfo.version', index=0,
+      name='version', full_name='tvserver.driver_info.version', index=0,
       number=1, type=13, cpp_type=3, label=2,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     descriptor.FieldDescriptor(
-      name='dcn', full_name='driverinfo.dcn', index=1,
+      name='dcn', full_name='tvserver.driver_info.dcn', index=1,
       number=2, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=unicode("", "utf-8"),
       message_type=None, enum_type=None, containing_type=None,
@@ -46,41 +46,41 @@ _DRIVERINFO = descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=20,
-  serialized_end=62,
+  serialized_start=31,
+  serialized_end=74,
 )
 
 
-_DRIVERINFORESPONSE = descriptor.Descriptor(
-  name='driverinforesponse',
-  full_name='driverinforesponse',
+_DRIVER_INFORESPONSE = descriptor.Descriptor(
+  name='driver_inforesponse',
+  full_name='tvserver.driver_inforesponse',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   fields=[
     descriptor.FieldDescriptor(
-      name='version', full_name='driverinforesponse.version', index=0,
+      name='version', full_name='tvserver.driver_inforesponse.version', index=0,
       number=1, type=13, cpp_type=3, label=2,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     descriptor.FieldDescriptor(
-      name='success', full_name='driverinforesponse.success', index=1,
+      name='success', full_name='tvserver.driver_inforesponse.success', index=1,
       number=2, type=8, cpp_type=7, label=1,
       has_default_value=False, default_value=False,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     descriptor.FieldDescriptor(
-      name='tune_type', full_name='driverinforesponse.tune_type', index=2,
+      name='tune_type', full_name='tvserver.driver_inforesponse.tune_type', index=2,
       number=3, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=unicode("", "utf-8"),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     descriptor.FieldDescriptor(
-      name='stream_mimetype', full_name='driverinforesponse.stream_mimetype', index=3,
+      name='stream_mimetype', full_name='tvserver.driver_inforesponse.stream_mimetype', index=3,
       number=4, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=unicode("", "utf-8"),
       message_type=None, enum_type=None, containing_type=None,
@@ -95,23 +95,23 @@ _DRIVERINFORESPONSE = descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=64,
-  serialized_end=162,
+  serialized_start=76,
+  serialized_end=175,
 )
 
-DESCRIPTOR.message_types_by_name['driverinfo'] = _DRIVERINFO
-DESCRIPTOR.message_types_by_name['driverinforesponse'] = _DRIVERINFORESPONSE
+DESCRIPTOR.message_types_by_name['driver_info'] = _DRIVER_INFO
+DESCRIPTOR.message_types_by_name['driver_inforesponse'] = _DRIVER_INFORESPONSE
 
-class driverinfo(message.Message):
+class driver_info(message.Message):
   __metaclass__ = reflection.GeneratedProtocolMessageType
-  DESCRIPTOR = _DRIVERINFO
+  DESCRIPTOR = _DRIVER_INFO
   
-  # @@protoc_insertion_point(class_scope:driverinfo)
+  # @@protoc_insertion_point(class_scope:tvserver.driver_info)
 
-class driverinforesponse(message.Message):
+class driver_inforesponse(message.Message):
   __metaclass__ = reflection.GeneratedProtocolMessageType
-  DESCRIPTOR = _DRIVERINFORESPONSE
+  DESCRIPTOR = _DRIVER_INFORESPONSE
   
-  # @@protoc_insertion_point(class_scope:driverinforesponse)
+  # @@protoc_insertion_point(class_scope:tvserver.driver_inforesponse)
 
 # @@protoc_insertion_point(module_scope)

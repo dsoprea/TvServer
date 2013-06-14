@@ -3,10 +3,10 @@ from tv_server.interfaces.device.itunerdriver import TD_TYPE_CHANNELSCONF, \
 from tv_server.handlers import GetHandler
 from tv_server.device.tuner_info import TunerInfo
 from tv_server.handlers import RequestError
-from tv_server.backend.protocol.tune_pb2 import tune
-from tv_server.backend.protocol.cleartune_pb2 import cleartune
-from tv_server.backend.protocol.acquire_pb2 import acquire
-from tv_server.backend.protocol.devicestatus_pb2 import devicestatus
+from tv_server.backend.protocol.tuner_tune_pb2 import tuner_tune
+from tv_server.backend.protocol.tuner_clear_pb2 import tuner_clear
+from tv_server.backend.protocol.tuner_acquire_pb2 import tuner_acquire
+from tv_server.backend.protocol.tuner_status_pb2 import tuner_status
 from tv_server.backend.protocol.error_pb2 import error
 from tv_server.backend.client import Client
 
@@ -22,7 +22,7 @@ class TunerHandler(GetHandler):
         bdid: Device BigID.
         """
 
-        acquire_msg = acquire()
+        acquire_msg = tuner_acquire()
         acquire_msg.version = 1
         acquire_msg.device_bigid = bdid
 
@@ -42,10 +42,10 @@ class TunerHandler(GetHandler):
             raise RequestError("This interface requires virtual-channel "
                                "parameters.")
 
-        tune_msg = tune()
+        tune_msg = tuner_tune()
         tune_msg.version = 1
         tune_msg.tuning_bigid = btid
-        tune_msg.parameter_type = tune.VCHANNEL
+        tune_msg.parameter_type = tuner_tune.VCHANNEL
         tune_msg.vchannel.vchannel = int(vc);
         tune_msg.target.host = thost
         tune_msg.target.port = int(tport)
@@ -75,10 +75,10 @@ class TunerHandler(GetHandler):
         
         (name, freq, mod, vid, aid, pid) = cc_parts 
             
-        tune_msg = tune()
+        tune_msg = tuner_tune()
         tune_msg.version = 1
         tune_msg.tuning_bigid = btid
-        tune_msg.parameter_type = tune.CHANNELSCONF
+        tune_msg.parameter_type = tuner_tune.CHANNELSCONF
         tune_msg.channelsconf_record.name = name;
         tune_msg.channelsconf_record.frequency = int(freq);
         tune_msg.channelsconf_record.modulation = mod;
@@ -105,10 +105,10 @@ class TunerHandler(GetHandler):
             raise RequestError("This interface required channels-conf "
                                "parameters.")
             
-        tune_msg = tune()
+        tune_msg = tuner_tune()
         tune_msg.version = 1
         tune_msg.tuning_bigid = btid
-        tune_msg.parameter_type = tune.CHANNELSCONF
+        tune_msg.parameter_type = tuner_tune.CHANNELSCONF
         tune_msg.channelsconf_record.name = name;
         tune_msg.channelsconf_record.frequency = int(freq);
         tune_msg.channelsconf_record.modulation = mod;
@@ -129,22 +129,22 @@ class TunerHandler(GetHandler):
     def release(self, btid):
         """Stop tuning."""
 
-        cleartune_msg = cleartune()
-        cleartune_msg.version = 1
-        cleartune_msg.tuning_bigid = btid
+        tuneclear_msg = tuner_clear()
+        tuneclear_msg.version = 1
+        tuneclear_msg.tuning_bigid = btid
         
         # Expect a general_response in responsee.
-        response = self.__client.send_query(cleartune_msg)
+        response = self.__client.send_query(tuneclear_msg)
         if response.__class__ == error or response.success == False:
-            raise RequestError("Clear-tune failed: %s" % (response.message))
+            raise RequestError("Tune-clear failed: %s" % (response.message))
         
         return { "Success": True }
 
     def status(self):
-        devicestatus_msg = devicestatus()
-        devicestatus_msg.version = 1
+        tunerstatus_msg = tuner_status()
+        tunerstatus_msg.version = 1
 
-        response = self.__client.send_query(devicestatus_msg)
+        response = self.__client.send_query(tunerstatus_msg)
         if response.__class__ == error or response.success == False:
             raise RequestError("Tune-status failed: %s" % (response.message))
 

@@ -1,8 +1,10 @@
-message devicestatus {
+package tvserver;
+
+message tuner_status {
     required uint32 version = 1;
 }
 
-message devicestatusresponse {
+message tuner_statusresponse {
     message device {
         optional string bdid = 1;
         repeated string tuner_ids = 2;

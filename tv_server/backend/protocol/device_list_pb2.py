@@ -9,24 +9,31 @@ from google.protobuf import descriptor_pb2
 
 
 DESCRIPTOR = descriptor.FileDescriptor(
-  name='driverlist.proto',
-  package='',
-  serialized_pb='\n\x10\x64riverlist.proto\"\x1d\n\ndriverlist\x12\x0f\n\x07version\x18\x01 \x02(\r\"\x9d\x01\n\x12\x64riverlistresponse\x12\x0f\n\x07version\x18\x01 \x02(\r\x12\x0f\n\x07success\x18\x02 \x01(\x08\x12+\n\x07\x64rivers\x18\x03 \x03(\x0b\x32\x1a.driverlistresponse.driver\x1a\x38\n\x06\x64river\x12\x0b\n\x03\x64\x63n\x18\x01 \x01(\t\x12\x0c\n\x04name\x18\x02 \x01(\t\x12\x13\n\x0b\x64\x65scription\x18\x03 \x01(\t')
+  name='device_list.proto',
+  package='tvserver',
+  serialized_pb='\n\x11\x64\x65vice_list.proto\x12\x08tvserver\"+\n\x0b\x64\x65vice_list\x12\x0f\n\x07version\x18\x01 \x02(\r\x12\x0b\n\x03\x64\x63n\x18\x02 \x01(\t\"\xaf\x01\n\x13\x64\x65vice_listresponse\x12\x0f\n\x07version\x18\x01 \x02(\r\x12\x0f\n\x07success\x18\x02 \x01(\x08\x12\x35\n\x07\x64\x65vices\x18\x03 \x03(\x0b\x32$.tvserver.device_listresponse.device\x1a?\n\x06\x64\x65vice\x12\x0c\n\x04\x62\x64id\x18\x01 \x01(\t\x12\x0f\n\x07\x61\x64\x64ress\x18\x02 \x01(\t\x12\x16\n\x0etuner_quantity\x18\x03 \x01(\r')
 
 
 
 
-_DRIVERLIST = descriptor.Descriptor(
-  name='driverlist',
-  full_name='driverlist',
+_DEVICE_LIST = descriptor.Descriptor(
+  name='device_list',
+  full_name='tvserver.device_list',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   fields=[
     descriptor.FieldDescriptor(
-      name='version', full_name='driverlist.version', index=0,
+      name='version', full_name='tvserver.device_list.version', index=0,
       number=1, type=13, cpp_type=3, label=2,
       has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    descriptor.FieldDescriptor(
+      name='dcn', full_name='tvserver.device_list.dcn', index=1,
+      number=2, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=unicode("", "utf-8"),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
@@ -39,36 +46,36 @@ _DRIVERLIST = descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=20,
-  serialized_end=49,
+  serialized_start=31,
+  serialized_end=74,
 )
 
 
-_DRIVERLISTRESPONSE_DRIVER = descriptor.Descriptor(
-  name='driver',
-  full_name='driverlistresponse.driver',
+_DEVICE_LISTRESPONSE_DEVICE = descriptor.Descriptor(
+  name='device',
+  full_name='tvserver.device_listresponse.device',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   fields=[
     descriptor.FieldDescriptor(
-      name='dcn', full_name='driverlistresponse.driver.dcn', index=0,
+      name='bdid', full_name='tvserver.device_listresponse.device.bdid', index=0,
       number=1, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=unicode("", "utf-8"),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     descriptor.FieldDescriptor(
-      name='name', full_name='driverlistresponse.driver.name', index=1,
+      name='address', full_name='tvserver.device_listresponse.device.address', index=1,
       number=2, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=unicode("", "utf-8"),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     descriptor.FieldDescriptor(
-      name='description', full_name='driverlistresponse.driver.description', index=2,
-      number=3, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=unicode("", "utf-8"),
+      name='tuner_quantity', full_name='tvserver.device_listresponse.device.tuner_quantity', index=2,
+      number=3, type=13, cpp_type=3, label=1,
+      has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
@@ -81,33 +88,33 @@ _DRIVERLISTRESPONSE_DRIVER = descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=153,
-  serialized_end=209,
+  serialized_start=189,
+  serialized_end=252,
 )
 
-_DRIVERLISTRESPONSE = descriptor.Descriptor(
-  name='driverlistresponse',
-  full_name='driverlistresponse',
+_DEVICE_LISTRESPONSE = descriptor.Descriptor(
+  name='device_listresponse',
+  full_name='tvserver.device_listresponse',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   fields=[
     descriptor.FieldDescriptor(
-      name='version', full_name='driverlistresponse.version', index=0,
+      name='version', full_name='tvserver.device_listresponse.version', index=0,
       number=1, type=13, cpp_type=3, label=2,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     descriptor.FieldDescriptor(
-      name='success', full_name='driverlistresponse.success', index=1,
+      name='success', full_name='tvserver.device_listresponse.success', index=1,
       number=2, type=8, cpp_type=7, label=1,
       has_default_value=False, default_value=False,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     descriptor.FieldDescriptor(
-      name='drivers', full_name='driverlistresponse.drivers', index=2,
+      name='devices', full_name='tvserver.device_listresponse.devices', index=2,
       number=3, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
@@ -116,37 +123,37 @@ _DRIVERLISTRESPONSE = descriptor.Descriptor(
   ],
   extensions=[
   ],
-  nested_types=[_DRIVERLISTRESPONSE_DRIVER, ],
+  nested_types=[_DEVICE_LISTRESPONSE_DEVICE, ],
   enum_types=[
   ],
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=52,
-  serialized_end=209,
+  serialized_start=77,
+  serialized_end=252,
 )
 
-_DRIVERLISTRESPONSE_DRIVER.containing_type = _DRIVERLISTRESPONSE;
-_DRIVERLISTRESPONSE.fields_by_name['drivers'].message_type = _DRIVERLISTRESPONSE_DRIVER
-DESCRIPTOR.message_types_by_name['driverlist'] = _DRIVERLIST
-DESCRIPTOR.message_types_by_name['driverlistresponse'] = _DRIVERLISTRESPONSE
+_DEVICE_LISTRESPONSE_DEVICE.containing_type = _DEVICE_LISTRESPONSE;
+_DEVICE_LISTRESPONSE.fields_by_name['devices'].message_type = _DEVICE_LISTRESPONSE_DEVICE
+DESCRIPTOR.message_types_by_name['device_list'] = _DEVICE_LIST
+DESCRIPTOR.message_types_by_name['device_listresponse'] = _DEVICE_LISTRESPONSE
 
-class driverlist(message.Message):
+class device_list(message.Message):
   __metaclass__ = reflection.GeneratedProtocolMessageType
-  DESCRIPTOR = _DRIVERLIST
+  DESCRIPTOR = _DEVICE_LIST
   
-  # @@protoc_insertion_point(class_scope:driverlist)
+  # @@protoc_insertion_point(class_scope:tvserver.device_list)
 
-class driverlistresponse(message.Message):
+class device_listresponse(message.Message):
   __metaclass__ = reflection.GeneratedProtocolMessageType
   
-  class driver(message.Message):
+  class device(message.Message):
     __metaclass__ = reflection.GeneratedProtocolMessageType
-    DESCRIPTOR = _DRIVERLISTRESPONSE_DRIVER
+    DESCRIPTOR = _DEVICE_LISTRESPONSE_DEVICE
     
-    # @@protoc_insertion_point(class_scope:driverlistresponse.driver)
-  DESCRIPTOR = _DRIVERLISTRESPONSE
+    # @@protoc_insertion_point(class_scope:tvserver.device_listresponse.device)
+  DESCRIPTOR = _DEVICE_LISTRESPONSE
   
-  # @@protoc_insertion_point(class_scope:driverlistresponse)
+  # @@protoc_insertion_point(class_scope:tvserver.device_listresponse)
 
 # @@protoc_insertion_point(module_scope)

@@ -10,35 +10,35 @@ from google.protobuf import descriptor_pb2
 
 DESCRIPTOR = descriptor.FileDescriptor(
   name='error.proto',
-  package='',
-  serialized_pb='\n\x0b\x65rror.proto\"7\n\x05\x65rror\x12\x0f\n\x07version\x18\x01 \x02(\r\x12\x0c\n\x04type\x18\x02 \x01(\t\x12\x0f\n\x07message\x18\x03 \x01(\t')
+  package='tvserver',
+  serialized_pb='\n\x0b\x65rror.proto\x12\x08tvserver\"7\n\x05\x65rror\x12\x0f\n\x07version\x18\x01 \x02(\r\x12\x0c\n\x04type\x18\x02 \x01(\t\x12\x0f\n\x07message\x18\x03 \x01(\t')
 
 
 
 
 _ERROR = descriptor.Descriptor(
   name='error',
-  full_name='error',
+  full_name='tvserver.error',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   fields=[
     descriptor.FieldDescriptor(
-      name='version', full_name='error.version', index=0,
+      name='version', full_name='tvserver.error.version', index=0,
       number=1, type=13, cpp_type=3, label=2,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     descriptor.FieldDescriptor(
-      name='type', full_name='error.type', index=1,
+      name='type', full_name='tvserver.error.type', index=1,
       number=2, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=unicode("", "utf-8"),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     descriptor.FieldDescriptor(
-      name='message', full_name='error.message', index=2,
+      name='message', full_name='tvserver.error.message', index=2,
       number=3, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=unicode("", "utf-8"),
       message_type=None, enum_type=None, containing_type=None,
@@ -53,8 +53,8 @@ _ERROR = descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=15,
-  serialized_end=70,
+  serialized_start=25,
+  serialized_end=80,
 )
 
 DESCRIPTOR.message_types_by_name['error'] = _ERROR
@@ -63,6 +63,6 @@ class error(message.Message):
   __metaclass__ = reflection.GeneratedProtocolMessageType
   DESCRIPTOR = _ERROR
   
-  # @@protoc_insertion_point(class_scope:error)
+  # @@protoc_insertion_point(class_scope:tvserver.error)
 
 # @@protoc_insertion_point(module_scope)

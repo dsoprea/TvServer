@@ -10,42 +10,42 @@ from google.protobuf import descriptor_pb2
 
 DESCRIPTOR = descriptor.FileDescriptor(
   name='general.proto',
-  package='',
-  serialized_pb='\n\rgeneral.proto\"X\n\x0fgeneralresponse\x12\x0f\n\x07version\x18\x01 \x02(\r\x12\x0f\n\x07success\x18\x02 \x01(\x08\x12\x0f\n\x07message\x18\x03 \x01(\t\x12\x12\n\nerror_type\x18\x04 \x01(\t')
+  package='tvserver',
+  serialized_pb='\n\rgeneral.proto\x12\x08tvserver\"X\n\x0fgeneralresponse\x12\x0f\n\x07version\x18\x01 \x02(\r\x12\x0f\n\x07success\x18\x02 \x01(\x08\x12\x0f\n\x07message\x18\x03 \x01(\t\x12\x12\n\nerror_type\x18\x04 \x01(\t')
 
 
 
 
 _GENERALRESPONSE = descriptor.Descriptor(
   name='generalresponse',
-  full_name='generalresponse',
+  full_name='tvserver.generalresponse',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   fields=[
     descriptor.FieldDescriptor(
-      name='version', full_name='generalresponse.version', index=0,
+      name='version', full_name='tvserver.generalresponse.version', index=0,
       number=1, type=13, cpp_type=3, label=2,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     descriptor.FieldDescriptor(
-      name='success', full_name='generalresponse.success', index=1,
+      name='success', full_name='tvserver.generalresponse.success', index=1,
       number=2, type=8, cpp_type=7, label=1,
       has_default_value=False, default_value=False,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     descriptor.FieldDescriptor(
-      name='message', full_name='generalresponse.message', index=2,
+      name='message', full_name='tvserver.generalresponse.message', index=2,
       number=3, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=unicode("", "utf-8"),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     descriptor.FieldDescriptor(
-      name='error_type', full_name='generalresponse.error_type', index=3,
+      name='error_type', full_name='tvserver.generalresponse.error_type', index=3,
       number=4, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=unicode("", "utf-8"),
       message_type=None, enum_type=None, containing_type=None,
@@ -60,8 +60,8 @@ _GENERALRESPONSE = descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=17,
-  serialized_end=105,
+  serialized_start=27,
+  serialized_end=115,
 )
 
 DESCRIPTOR.message_types_by_name['generalresponse'] = _GENERALRESPONSE
@@ -70,6 +70,6 @@ class generalresponse(message.Message):
   __metaclass__ = reflection.GeneratedProtocolMessageType
   DESCRIPTOR = _GENERALRESPONSE
   
-  # @@protoc_insertion_point(class_scope:generalresponse)
+  # @@protoc_insertion_point(class_scope:tvserver.generalresponse)
 
 # @@protoc_insertion_point(module_scope)

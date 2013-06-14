@@ -9,29 +9,29 @@ from google.protobuf import descriptor_pb2
 
 
 DESCRIPTOR = descriptor.FileDescriptor(
-  name='acquire.proto',
-  package='',
-  serialized_pb='\n\racquire.proto\"0\n\x07\x61\x63quire\x12\x0f\n\x07version\x18\x01 \x02(\r\x12\x14\n\x0c\x64\x65vice_bigid\x18\x02 \x01(\t\"n\n\x0f\x61\x63quireresponse\x12\x0f\n\x07version\x18\x01 \x02(\r\x12\x0f\n\x07success\x18\x02 \x01(\x08\x12\x0f\n\x07message\x18\x03 \x01(\t\x12\x12\n\nerror_type\x18\x04 \x01(\t\x12\x14\n\x0ctuning_bigid\x18\x05 \x01(\t')
+  name='tuner_acquire.proto',
+  package='tvserver',
+  serialized_pb='\n\x13tuner_acquire.proto\x12\x08tvserver\"6\n\rtuner_acquire\x12\x0f\n\x07version\x18\x01 \x02(\r\x12\x14\n\x0c\x64\x65vice_bigid\x18\x02 \x01(\t\"t\n\x15tuner_acquireresponse\x12\x0f\n\x07version\x18\x01 \x02(\r\x12\x0f\n\x07success\x18\x02 \x01(\x08\x12\x0f\n\x07message\x18\x03 \x01(\t\x12\x12\n\nerror_type\x18\x04 \x01(\t\x12\x14\n\x0ctuning_bigid\x18\x05 \x01(\t')
 
 
 
 
-_ACQUIRE = descriptor.Descriptor(
-  name='acquire',
-  full_name='acquire',
+_TUNER_ACQUIRE = descriptor.Descriptor(
+  name='tuner_acquire',
+  full_name='tvserver.tuner_acquire',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   fields=[
     descriptor.FieldDescriptor(
-      name='version', full_name='acquire.version', index=0,
+      name='version', full_name='tvserver.tuner_acquire.version', index=0,
       number=1, type=13, cpp_type=3, label=2,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     descriptor.FieldDescriptor(
-      name='device_bigid', full_name='acquire.device_bigid', index=1,
+      name='device_bigid', full_name='tvserver.tuner_acquire.device_bigid', index=1,
       number=2, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=unicode("", "utf-8"),
       message_type=None, enum_type=None, containing_type=None,
@@ -46,48 +46,48 @@ _ACQUIRE = descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=17,
-  serialized_end=65,
+  serialized_start=33,
+  serialized_end=87,
 )
 
 
-_ACQUIRERESPONSE = descriptor.Descriptor(
-  name='acquireresponse',
-  full_name='acquireresponse',
+_TUNER_ACQUIRERESPONSE = descriptor.Descriptor(
+  name='tuner_acquireresponse',
+  full_name='tvserver.tuner_acquireresponse',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   fields=[
     descriptor.FieldDescriptor(
-      name='version', full_name='acquireresponse.version', index=0,
+      name='version', full_name='tvserver.tuner_acquireresponse.version', index=0,
       number=1, type=13, cpp_type=3, label=2,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     descriptor.FieldDescriptor(
-      name='success', full_name='acquireresponse.success', index=1,
+      name='success', full_name='tvserver.tuner_acquireresponse.success', index=1,
       number=2, type=8, cpp_type=7, label=1,
       has_default_value=False, default_value=False,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     descriptor.FieldDescriptor(
-      name='message', full_name='acquireresponse.message', index=2,
+      name='message', full_name='tvserver.tuner_acquireresponse.message', index=2,
       number=3, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=unicode("", "utf-8"),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     descriptor.FieldDescriptor(
-      name='error_type', full_name='acquireresponse.error_type', index=3,
+      name='error_type', full_name='tvserver.tuner_acquireresponse.error_type', index=3,
       number=4, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=unicode("", "utf-8"),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     descriptor.FieldDescriptor(
-      name='tuning_bigid', full_name='acquireresponse.tuning_bigid', index=4,
+      name='tuning_bigid', full_name='tvserver.tuner_acquireresponse.tuning_bigid', index=4,
       number=5, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=unicode("", "utf-8"),
       message_type=None, enum_type=None, containing_type=None,
@@ -102,23 +102,23 @@ _ACQUIRERESPONSE = descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=67,
-  serialized_end=177,
+  serialized_start=89,
+  serialized_end=205,
 )
 
-DESCRIPTOR.message_types_by_name['acquire'] = _ACQUIRE
-DESCRIPTOR.message_types_by_name['acquireresponse'] = _ACQUIRERESPONSE
+DESCRIPTOR.message_types_by_name['tuner_acquire'] = _TUNER_ACQUIRE
+DESCRIPTOR.message_types_by_name['tuner_acquireresponse'] = _TUNER_ACQUIRERESPONSE
 
-class acquire(message.Message):
+class tuner_acquire(message.Message):
   __metaclass__ = reflection.GeneratedProtocolMessageType
-  DESCRIPTOR = _ACQUIRE
+  DESCRIPTOR = _TUNER_ACQUIRE
   
-  # @@protoc_insertion_point(class_scope:acquire)
+  # @@protoc_insertion_point(class_scope:tvserver.tuner_acquire)
 
-class acquireresponse(message.Message):
+class tuner_acquireresponse(message.Message):
   __metaclass__ = reflection.GeneratedProtocolMessageType
-  DESCRIPTOR = _ACQUIRERESPONSE
+  DESCRIPTOR = _TUNER_ACQUIRERESPONSE
   
-  # @@protoc_insertion_point(class_scope:acquireresponse)
+  # @@protoc_insertion_point(class_scope:tvserver.tuner_acquireresponse)
 
 # @@protoc_insertion_point(module_scope)

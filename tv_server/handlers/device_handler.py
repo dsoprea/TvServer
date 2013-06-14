@@ -1,5 +1,5 @@
 from tv_server.handlers import GetHandler
-from tv_server.backend.protocol.devicelist_pb2 import devicelist
+from tv_server.backend.protocol.device_list_pb2 import device_list
 from tv_server.backend.protocol.error_pb2 import error
 from tv_server.backend.client import Client
 from tv_server.handlers import RequestError
@@ -16,7 +16,7 @@ class DeviceHandler(GetHandler):
         dcn: Driver class name
         """
 
-        devicelist_msg = devicelist()
+        devicelist_msg = device_list()
         devicelist_msg.version = 1
         devicelist_msg.dcn = dcn
 

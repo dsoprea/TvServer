@@ -1,6 +1,6 @@
 package tvserver;
 
-message tune {
+message tuner_tune {
     enum parameter_type_e {
         VCHANNEL = 0;
         CHANNELSCONF = 1;

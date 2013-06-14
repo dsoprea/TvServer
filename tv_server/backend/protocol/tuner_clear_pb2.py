@@ -9,29 +9,29 @@ from google.protobuf import descriptor_pb2
 
 
 DESCRIPTOR = descriptor.FileDescriptor(
-  name='cleartune.proto',
-  package='',
-  serialized_pb='\n\x0f\x63leartune.proto\"2\n\tcleartune\x12\x0f\n\x07version\x18\x01 \x02(\r\x12\x14\n\x0ctuning_bigid\x18\x02 \x01(\t')
+  name='tuner_clear.proto',
+  package='tvserver',
+  serialized_pb='\n\x11tuner_clear.proto\x12\x08tvserver\"4\n\x0btuner_clear\x12\x0f\n\x07version\x18\x01 \x02(\r\x12\x14\n\x0ctuning_bigid\x18\x02 \x01(\t')
 
 
 
 
-_CLEARTUNE = descriptor.Descriptor(
-  name='cleartune',
-  full_name='cleartune',
+_TUNER_CLEAR = descriptor.Descriptor(
+  name='tuner_clear',
+  full_name='tvserver.tuner_clear',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   fields=[
     descriptor.FieldDescriptor(
-      name='version', full_name='cleartune.version', index=0,
+      name='version', full_name='tvserver.tuner_clear.version', index=0,
       number=1, type=13, cpp_type=3, label=2,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     descriptor.FieldDescriptor(
-      name='tuning_bigid', full_name='cleartune.tuning_bigid', index=1,
+      name='tuning_bigid', full_name='tvserver.tuner_clear.tuning_bigid', index=1,
       number=2, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=unicode("", "utf-8"),
       message_type=None, enum_type=None, containing_type=None,
@@ -46,16 +46,16 @@ _CLEARTUNE = descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=19,
-  serialized_end=69,
+  serialized_start=31,
+  serialized_end=83,
 )
 
-DESCRIPTOR.message_types_by_name['cleartune'] = _CLEARTUNE
+DESCRIPTOR.message_types_by_name['tuner_clear'] = _TUNER_CLEAR
 
-class cleartune(message.Message):
+class tuner_clear(message.Message):
   __metaclass__ = reflection.GeneratedProtocolMessageType
-  DESCRIPTOR = _CLEARTUNE
+  DESCRIPTOR = _TUNER_CLEAR
   
-  # @@protoc_insertion_point(class_scope:cleartune)
+  # @@protoc_insertion_point(class_scope:tvserver.tuner_clear)
 
 # @@protoc_insertion_point(module_scope)

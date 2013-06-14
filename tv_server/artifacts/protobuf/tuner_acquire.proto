@@ -1,9 +1,11 @@
-message acquire {
+package tvserver;
+
+message tuner_acquire {
     required uint32 version = 1;
     optional string device_bigid = 2;
 }
 
-message acquireresponse {
+message tuner_acquireresponse {
     required uint32 version = 1;
     optional bool success = 2;
 

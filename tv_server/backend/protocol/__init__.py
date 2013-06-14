@@ -1,44 +1,47 @@
-from tv_server.backend.protocol.tune_pb2 import tune
-from tv_server.backend.protocol.acquire_pb2 import acquire, acquireresponse
+from tv_server.backend.protocol.tuner_tune_pb2 import tuner_tune
+from tv_server.backend.protocol.tuner_acquire_pb2 import tuner_acquire, \
+                                                         tuner_acquireresponse
+from tv_server.backend.protocol.tuner_clear_pb2 import tuner_clear
+from tv_server.backend.protocol.tuner_status_pb2 import tuner_status, \
+                                                        tuner_statusresponse
+from tv_server.backend.protocol.device_list_pb2 import device_list, \
+                                                       device_listresponse
+from tv_server.backend.protocol.driver_list_pb2 import driver_list, \
+                                                       driver_listresponse
+from tv_server.backend.protocol.driver_info_pb2 import driver_info, \
+                                                       driver_inforesponse
 from tv_server.backend.protocol.error_pb2 import error
-from tv_server.backend.protocol.cleartune_pb2 import cleartune
 from tv_server.backend.protocol.general_pb2 import generalresponse
-from tv_server.backend.protocol.devicestatus_pb2 import devicestatus, \
-                                                        devicestatusresponse
-from tv_server.backend.protocol.devicelist_pb2 import devicelist, \
-                                                      devicelistresponse
-from tv_server.backend.protocol.driverlist_pb2 import driverlist, \
-                                                      driverlistresponse
-from tv_server.backend.protocol.driverinfo_pb2 import driverinfo, \
-                                                      driverinforesponse
 
-MT_TUNE = 'tune'
 MT_GENERALRESPONSE = 'generalresponse'
-MT_ACQUIRE = 'acquire'
-MT_ACQUIRERESPONSE = 'acquireresponse'
-MT_CLEARTUNE = 'cleartune'
-MT_DEVICESTATUS = 'devicestatus'
-MT_DEVICESTATUSRESPONSE = 'devicestatusresponse'
-MT_DEVICELIST = 'devicelist'
-MT_DEVICELISTRESPONSE = 'devicelistresponse'
-MT_DRIVERLIST = 'driverlist'
-MT_DRIVERLISTRESPONSE = 'driverlistresponse'
-MT_DRIVERINFO = 'driverinfo'
-MT_DRIVERINFORESPONSE = 'driverinforesponse'
+MT_ERROR = 'error'
+MT_TUNER_ACQUIRE = 'tuner_acquire'
+MT_TUNER_ACQUIRERESPONSE = 'tuner_acquireresponse'
+MT_TUNER_CLEAR = 'tuner_clear'
+MT_TUNER_TUNE = 'tuner_tune'
+MT_TUNER_STATUS = 'tuner_status'
+MT_TUNER_STATUSRESPONSE = 'tuner_statusresponse'
+MT_DEVICE_LIST = 'device_list'
+MT_DEVICE_LISTRESPONSE = 'device_listresponse'
+MT_DRIVER_LIST = 'driver_list'
+MT_DRIVER_LISTRESPONSE = 'driver_listresponse'
+MT_DRIVER_INFO = 'driver_info'
+MT_DRIVER_INFORESPONSE = 'driver_inforesponse'
 
 _message_list = ((MT_GENERALRESPONSE, generalresponse),
-                 (MT_TUNE, tune),
-                 (MT_ACQUIRE, acquire),
-                 (MT_ACQUIRERESPONSE, acquireresponse),
-                 (MT_CLEARTUNE, cleartune),
-                 (MT_DEVICESTATUS, devicestatus),
-                 (MT_DEVICESTATUSRESPONSE, devicestatusresponse),
-                 (MT_DEVICELIST, devicelist),
-                 (MT_DEVICELISTRESPONSE, devicelistresponse),
-                 (MT_DRIVERLIST, driverlist),
-                 (MT_DRIVERLISTRESPONSE, driverlistresponse),
-                 (MT_DRIVERINFO, driverinfo),
-                 (MT_DRIVERINFORESPONSE, driverinforesponse))
+                 (MT_TUNER_TUNE, tuner_tune),
+                 (MT_TUNER_ACQUIRE, tuner_acquire),
+                 (MT_TUNER_ACQUIRERESPONSE, tuner_acquireresponse),
+                 (MT_TUNER_CLEAR, tuner_clear),
+                 (MT_TUNER_STATUS, tuner_status),
+                 (MT_TUNER_STATUSRESPONSE, tuner_statusresponse),
+                 (MT_DEVICE_LIST, device_list),
+                 (MT_DEVICE_LISTRESPONSE, device_listresponse),
+                 (MT_DRIVER_LIST, driver_list),
+                 (MT_DRIVER_LISTRESPONSE, driver_listresponse),
+                 (MT_DRIVER_INFO, driver_info),
+                 (MT_DRIVER_INFORESPONSE, driver_inforesponse),
+                 (MT_ERROR, error))
 
 _messages_bytype = {}
 _messages_byindex = {}

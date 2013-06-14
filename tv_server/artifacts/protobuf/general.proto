@@ -1,3 +1,5 @@
+package tvserver;
+
 message generalresponse {
     required uint32 version = 1;
     optional bool success = 2;

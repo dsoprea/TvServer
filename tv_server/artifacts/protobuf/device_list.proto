@@ -1,9 +1,11 @@
-message devicelist {
+package tvserver;
+
+message device_list {
     required uint32 version = 1;
     optional string dcn = 2;
 }
 
-message devicelistresponse {
+message device_listresponse {
     message device {
         optional string bdid = 1;
         optional string address = 2;

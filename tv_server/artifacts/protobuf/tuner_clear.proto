@@ -1,4 +1,6 @@
-message cleartune {
+package tvserver;
+
+message tuner_clear {
     required uint32 version = 1;
     optional string tuning_bigid = 2;
 }

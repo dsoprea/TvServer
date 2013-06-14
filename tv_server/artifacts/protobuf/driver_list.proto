@@ -1,8 +1,10 @@
-message driverlist {
+package tvserver;
+
+message driver_list {
     required uint32 version = 1;
 }
 
-message driverlistresponse {
+message driver_listresponse {
     message driver {
         optional string dcn = 1;
         optional string name = 2;
