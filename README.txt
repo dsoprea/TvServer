@@ -4,12 +4,10 @@ TvServer
 A REST-based interface for HDHomeRun and Video4Linux DVB TV tuners.
 
 
-This project is nearing completion.
-
 Remaining Tasks
 ---------------
 
-> Debug DVB streaming.
-> Finish streaming of DVB devices.
+> Debug DVB capture.
+> Finish streaming of local DVB devices.
 > Finish README.
 
