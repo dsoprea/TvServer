@@ -6,6 +6,7 @@ message acquire {
 message acquireresponse {
     required uint32 version = 1;
     optional bool success = 2;
+
     optional string message = 3;
     optional string error_type = 4;
     optional string tuning_bigid = 5;

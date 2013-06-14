@@ -11,7 +11,7 @@ from google.protobuf import descriptor_pb2
 DESCRIPTOR = descriptor.FileDescriptor(
   name='devicestatus.proto',
   package='',
-  serialized_pb='\n\x12\x64\x65vicestatus.proto\"\x1f\n\x0c\x64\x65vicestatus\x12\x0f\n\x07version\x18\x01 \x02(\r\"\xe9\x01\n\x14\x64\x65vicestatusresponse\x12\x0f\n\x07version\x18\x01 \x02(\r\x12-\n\x07\x64rivers\x18\x02 \x03(\x0b\x32\x1c.devicestatusresponse.driver\x1a:\n\x06\x64\x65vice\x12\x0f\n\x07version\x18\x01 \x02(\r\x12\x0c\n\x04\x62\x64id\x18\x02 \x01(\t\x12\x11\n\ttuner_ids\x18\x03 \x03(\t\x1aU\n\x06\x64river\x12\x0f\n\x07version\x18\x01 \x02(\r\x12\x0b\n\x03\x64\x63n\x18\x02 \x01(\t\x12-\n\x07\x64\x65vices\x18\x03 \x03(\x0b\x32\x1c.devicestatusresponse.device')
+  serialized_pb='\n\x12\x64\x65vicestatus.proto\"\x1f\n\x0c\x64\x65vicestatus\x12\x0f\n\x07version\x18\x01 \x02(\r\"\xd8\x01\n\x14\x64\x65vicestatusresponse\x12\x0f\n\x07version\x18\x01 \x02(\r\x12\x0f\n\x07success\x18\x02 \x01(\x08\x12-\n\x07\x64rivers\x18\x03 \x03(\x0b\x32\x1c.devicestatusresponse.driver\x1a)\n\x06\x64\x65vice\x12\x0c\n\x04\x62\x64id\x18\x01 \x01(\t\x12\x11\n\ttuner_ids\x18\x02 \x03(\t\x1a\x44\n\x06\x64river\x12\x0b\n\x03\x64\x63n\x18\x01 \x01(\t\x12-\n\x07\x64\x65vices\x18\x02 \x03(\x0b\x32\x1c.devicestatusresponse.device')
 
 
 
@@ -52,22 +52,15 @@ _DEVICESTATUSRESPONSE_DEVICE = descriptor.Descriptor(
   containing_type=None,
   fields=[
     descriptor.FieldDescriptor(
-      name='version', full_name='devicestatusresponse.device.version', index=0,
-      number=1, type=13, cpp_type=3, label=2,
-      has_default_value=False, default_value=0,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-    descriptor.FieldDescriptor(
-      name='bdid', full_name='devicestatusresponse.device.bdid', index=1,
-      number=2, type=9, cpp_type=9, label=1,
+      name='bdid', full_name='devicestatusresponse.device.bdid', index=0,
+      number=1, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=unicode("", "utf-8"),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     descriptor.FieldDescriptor(
-      name='tuner_ids', full_name='devicestatusresponse.device.tuner_ids', index=2,
-      number=3, type=9, cpp_type=9, label=3,
+      name='tuner_ids', full_name='devicestatusresponse.device.tuner_ids', index=1,
+      number=2, type=9, cpp_type=9, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
@@ -81,7 +74,7 @@ _DEVICESTATUSRESPONSE_DEVICE = descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=144,
+  serialized_start=161,
   serialized_end=202,
 )
 
@@ -93,22 +86,15 @@ _DEVICESTATUSRESPONSE_DRIVER = descriptor.Descriptor(
   containing_type=None,
   fields=[
     descriptor.FieldDescriptor(
-      name='version', full_name='devicestatusresponse.driver.version', index=0,
-      number=1, type=13, cpp_type=3, label=2,
-      has_default_value=False, default_value=0,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-    descriptor.FieldDescriptor(
-      name='dcn', full_name='devicestatusresponse.driver.dcn', index=1,
-      number=2, type=9, cpp_type=9, label=1,
+      name='dcn', full_name='devicestatusresponse.driver.dcn', index=0,
+      number=1, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=unicode("", "utf-8"),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     descriptor.FieldDescriptor(
-      name='devices', full_name='devicestatusresponse.driver.devices', index=2,
-      number=3, type=11, cpp_type=10, label=3,
+      name='devices', full_name='devicestatusresponse.driver.devices', index=1,
+      number=2, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
@@ -123,7 +109,7 @@ _DEVICESTATUSRESPONSE_DRIVER = descriptor.Descriptor(
   is_extendable=False,
   extension_ranges=[],
   serialized_start=204,
-  serialized_end=289,
+  serialized_end=272,
 )
 
 _DEVICESTATUSRESPONSE = descriptor.Descriptor(
@@ -141,8 +127,15 @@ _DEVICESTATUSRESPONSE = descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       options=None),
     descriptor.FieldDescriptor(
-      name='drivers', full_name='devicestatusresponse.drivers', index=1,
-      number=2, type=11, cpp_type=10, label=3,
+      name='success', full_name='devicestatusresponse.success', index=1,
+      number=2, type=8, cpp_type=7, label=1,
+      has_default_value=False, default_value=False,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    descriptor.FieldDescriptor(
+      name='drivers', full_name='devicestatusresponse.drivers', index=2,
+      number=3, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
@@ -157,7 +150,7 @@ _DEVICESTATUSRESPONSE = descriptor.Descriptor(
   is_extendable=False,
   extension_ranges=[],
   serialized_start=56,
-  serialized_end=289,
+  serialized_end=272,
 )
 
 _DEVICESTATUSRESPONSE_DEVICE.containing_type = _DEVICESTATUSRESPONSE;

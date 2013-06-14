@@ -7,24 +7,21 @@ message tune {
     }
 
     message vchannel_m {
-        required uint32 version = 1;
-        optional uint32 vchannel = 2;
+        optional uint32 vchannel = 1;
     }
     
     message channels_conf_record_m {
-        required uint32 version = 1;
-        optional string name = 2;
-        optional uint32 frequency = 3;
-        optional string modulation = 4;
-        optional uint32 video_id = 5;
-        optional uint32 audio_id = 6;
-        optional uint32 program_id = 7;
+        optional string name = 1;
+        optional uint32 frequency = 2;
+        optional string modulation = 3;
+        optional uint32 video_id = 4;
+        optional uint32 audio_id = 5;
+        optional uint32 program_id = 6;
     }
 
     message target_m {
-        required uint32 version = 1;
-        optional string host = 2;
-        optional int32 port = 3;
+        optional string host = 1;
+        optional int32 port = 2;
     }
     
     required uint32 version = 1;

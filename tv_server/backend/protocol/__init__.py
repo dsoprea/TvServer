@@ -5,6 +5,12 @@ from tv_server.backend.protocol.cleartune_pb2 import cleartune
 from tv_server.backend.protocol.general_pb2 import generalresponse
 from tv_server.backend.protocol.devicestatus_pb2 import devicestatus, \
                                                         devicestatusresponse
+from tv_server.backend.protocol.devicelist_pb2 import devicelist, \
+                                                      devicelistresponse
+from tv_server.backend.protocol.driverlist_pb2 import driverlist, \
+                                                      driverlistresponse
+from tv_server.backend.protocol.driverinfo_pb2 import driverinfo, \
+                                                      driverinforesponse
 
 MT_TUNE = 'tune'
 MT_GENERALRESPONSE = 'generalresponse'
@@ -13,6 +19,12 @@ MT_ACQUIRERESPONSE = 'acquireresponse'
 MT_CLEARTUNE = 'cleartune'
 MT_DEVICESTATUS = 'devicestatus'
 MT_DEVICESTATUSRESPONSE = 'devicestatusresponse'
+MT_DEVICELIST = 'devicelist'
+MT_DEVICELISTRESPONSE = 'devicelistresponse'
+MT_DRIVERLIST = 'driverlist'
+MT_DRIVERLISTRESPONSE = 'driverlistresponse'
+MT_DRIVERINFO = 'driverinfo'
+MT_DRIVERINFORESPONSE = 'driverinforesponse'
 
 _message_list = ((MT_GENERALRESPONSE, generalresponse),
                  (MT_TUNE, tune),
@@ -20,7 +32,13 @@ _message_list = ((MT_GENERALRESPONSE, generalresponse),
                  (MT_ACQUIRERESPONSE, acquireresponse),
                  (MT_CLEARTUNE, cleartune),
                  (MT_DEVICESTATUS, devicestatus),
-                 (MT_DEVICESTATUSRESPONSE, devicestatusresponse))
+                 (MT_DEVICESTATUSRESPONSE, devicestatusresponse),
+                 (MT_DEVICELIST, devicelist),
+                 (MT_DEVICELISTRESPONSE, devicelistresponse),
+                 (MT_DRIVERLIST, driverlist),
+                 (MT_DRIVERLISTRESPONSE, driverlistresponse),
+                 (MT_DRIVERINFO, driverinfo),
+                 (MT_DRIVERINFORESPONSE, driverinforesponse))
 
 _messages_bytype = {}
 _messages_byindex = {}

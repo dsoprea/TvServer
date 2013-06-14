@@ -3,19 +3,18 @@ message devicestatus {
 }
 
 message devicestatusresponse {
-    required uint32 version = 1;
-
     message device {
-        required uint32 version = 1;
-        optional string bdid = 2;
-        repeated string tuner_ids = 3;
+        optional string bdid = 1;
+        repeated string tuner_ids = 2;
     }
     
     message driver {
-        required uint32 version = 1;
-        optional string dcn = 2;
-        repeated device devices = 3;
+        optional string dcn = 1;
+        repeated device devices = 2;
     }
 
-    repeated driver drivers = 2;
+    required uint32 version = 1;
+    optional bool success = 2;
+
+    repeated driver drivers = 3;
 }

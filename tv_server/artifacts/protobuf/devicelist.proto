@@ -1,0 +1,17 @@
+message devicelist {
+    required uint32 version = 1;
+    optional string dcn = 2;
+}
+
+message devicelistresponse {
+    message device {
+        optional string bdid = 1;
+        optional string address = 2;
+        optional uint32 tuner_quantity = 3;
+    }
+
+    required uint32 version = 1;
+    optional bool success = 2;
+
+    repeated device devices = 3;
+}

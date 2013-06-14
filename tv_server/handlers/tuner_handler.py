@@ -7,6 +7,7 @@ from tv_server.backend.protocol.tune_pb2 import tune
 from tv_server.backend.protocol.cleartune_pb2 import cleartune
 from tv_server.backend.protocol.acquire_pb2 import acquire
 from tv_server.backend.protocol.devicestatus_pb2 import devicestatus
+from tv_server.backend.protocol.error_pb2 import error
 from tv_server.backend.client import Client
 
 
@@ -26,8 +27,7 @@ class TunerHandler(GetHandler):
         acquire_msg.device_bigid = bdid
 
         response = self.__client.send_query(acquire_msg)
-        
-        if response.success == False:
+        if response.__class__ == error or response.success == False:
             raise RequestError("Acquire failed: %s" % (response.message))
         
         return { 'btid': response.tuning_bigid }
@@ -46,16 +46,13 @@ class TunerHandler(GetHandler):
         tune_msg.version = 1
         tune_msg.tuning_bigid = btid
         tune_msg.parameter_type = tune.VCHANNEL
-        tune_msg.vchannel.version = 1
         tune_msg.vchannel.vchannel = int(vc);
-        tune_msg.target.version = 1
         tune_msg.target.host = thost
         tune_msg.target.port = int(tport)
 
         # Expect a general_response in responsee.
         response = self.__client.send_query(tune_msg)
-        
-        if response.success == False:
+        if response.__class__ == error or response.success == False:
             raise RequestError("Tune failed: %s" % (response.message))
         
         return { "Success": True }
@@ -82,21 +79,18 @@ class TunerHandler(GetHandler):
         tune_msg.version = 1
         tune_msg.tuning_bigid = btid
         tune_msg.parameter_type = tune.CHANNELSCONF
-        tune_msg.channelsconf_record.version = 1
         tune_msg.channelsconf_record.name = name;
         tune_msg.channelsconf_record.frequency = int(freq);
         tune_msg.channelsconf_record.modulation = mod;
         tune_msg.channelsconf_record.video_id = int(vid);
         tune_msg.channelsconf_record.audio_id = int(aid);
         tune_msg.channelsconf_record.program_id = int(pid);
-        tune_msg.target.version = 1
         tune_msg.target.host = thost
         tune_msg.target.port = int(tport)
 
         # Expect a general_response in responsee.
         response = self.__client.send_query(tune_msg)
-        
-        if response.success == False:
+        if response.__class__ == error or response.success == False:
             raise RequestError("Tune failed: %s" % (response.message))
         
         return { "Success": True }
@@ -115,21 +109,19 @@ class TunerHandler(GetHandler):
         tune_msg.version = 1
         tune_msg.tuning_bigid = btid
         tune_msg.parameter_type = tune.CHANNELSCONF
-        tune_msg.channelsconf_record.version = 1
         tune_msg.channelsconf_record.name = name;
         tune_msg.channelsconf_record.frequency = int(freq);
         tune_msg.channelsconf_record.modulation = mod;
         tune_msg.channelsconf_record.video_id = int(vid);
         tune_msg.channelsconf_record.audio_id = int(aid);
         tune_msg.channelsconf_record.program_id = int(pid);
-        tune_msg.target.version = 1
         tune_msg.target.host = thost
         tune_msg.target.port = int(tport)
 
         # Expect a general_response in responsee.
         response = self.__client.send_query(tune_msg)
         
-        if response.success == False:
+        if response.__class__ == error or response.success == False:
             raise RequestError("Tune failed: %s" % (response.message))
         
         return { "Success": True }
@@ -143,8 +135,7 @@ class TunerHandler(GetHandler):
         
         # Expect a general_response in responsee.
         response = self.__client.send_query(cleartune_msg)
-        
-        if response.success == False:
+        if response.__class__ == error or response.success == False:
             raise RequestError("Clear-tune failed: %s" % (response.message))
         
         return { "Success": True }
@@ -153,10 +144,12 @@ class TunerHandler(GetHandler):
         devicestatus_msg = devicestatus()
         devicestatus_msg.version = 1
 
-        response_msg = self.__client.send_query(devicestatus_msg)
+        response = self.__client.send_query(devicestatus_msg)
+        if response.__class__ == error or response.success == False:
+            raise RequestError("Tune-status failed: %s" % (response.message))
 
-        response = {}
-        for driver_msg in response_msg.drivers:
+        drivers = {}
+        for driver_msg in response.drivers:
             devices = {}
             for device_msg in driver_msg.devices:
                 tuner_ids = []
@@ -165,6 +158,6 @@ class TunerHandler(GetHandler):
 
                 devices[device_msg.bdid] = tuner_ids
 
-            response[driver_msg.dcn] = devices
+            drivers[driver_msg.dcn] = devices
 
-        return response
+        return drivers

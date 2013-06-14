@@ -1,25 +1,38 @@
 from tv_server.handlers import GetHandler, RequestError
-from tv_server.device.drivers import available_drivers
+from tv_server.backend.client import Client
+from tv_server.backend.protocol.driverlist_pb2 import driverlist
+from tv_server.backend.protocol.driverinfo_pb2 import driverinfo
+from tv_server.backend.protocol.error_pb2 import error
 
 
 class DriverHandler(GetHandler):
+    def __init__(self):
+        super(DriverHandler, self).__init__()
+        self.__client = Client()
+        
     def list(self):
-        distilled = {}
-        for pair in available_drivers.iteritems():
-            (driver_cls_name, (driver_cls, device_cls)) = pair
+        driverlist_msg = driverlist()
+        driverlist_msg.version = 1
 
-            driver = driver_cls()
-            distilled[driver_cls_name] = (driver.name, driver.description)
+        response = self.__client.send_query(driverlist_msg)
+        if response.__class__ == error or response.success == False:
+            raise RequestError("Driver-list failed: %s" % (response.message))
+
+        distilled = {}
+        for driver_msg in response.drivers:
+            distilled[driver_msg.dcn] = (driver_msg.name, \
+                                         driver_msg.description)
 
         return distilled
 
     def info(self, dcn):
-        (driver_cls, device_cls) = available_drivers[dcn]
+        driverinfo_msg = driverinfo()
+        driverinfo_msg.version = 1
+        driverinfo_msg.dcn = dcn
 
-        driver = driver_cls()
-        info = { 'tune_type': \
-                    driver.tuner_data_type,
-                 'stream_mimetype':
-                    driver.stream_mimetype }
+        response = self.__client.send_query(driverinfo_msg)
+        if response.__class__ == error or response.success == False:
+            raise RequestError("Driver-info failed: %s" % (response.message))
 
-        return info
+        return { 'tune_type': response.tune_type,
+                 'stream_mimetype': response.stream_mimetype }

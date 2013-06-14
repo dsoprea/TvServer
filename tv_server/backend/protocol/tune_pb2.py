@@ -11,7 +11,7 @@ from google.protobuf import descriptor_pb2
 DESCRIPTOR = descriptor.FileDescriptor(
   name='tune.proto',
   package='tvserver',
-  serialized_pb='\n\ntune.proto\x12\x08tvserver\"\xb7\x04\n\x04tune\x12\x0f\n\x07version\x18\x01 \x02(\r\x12\x14\n\x0ctuning_bigid\x18\x02 \x01(\t\x12\x37\n\x0eparameter_type\x18\x03 \x01(\x0e\x32\x1f.tvserver.tune.parameter_type_e\x12+\n\x08vchannel\x18\x04 \x01(\x0b\x32\x19.tvserver.tune.vchannel_m\x12\x42\n\x13\x63hannelsconf_record\x18\x05 \x01(\x0b\x32%.tvserver.tune.channels_conf_record_m\x12\'\n\x06target\x18\x06 \x01(\x0b\x32\x17.tvserver.tune.target_m\x1a/\n\nvchannel_m\x12\x0f\n\x07version\x18\x01 \x02(\r\x12\x10\n\x08vchannel\x18\x02 \x01(\r\x1a\x96\x01\n\x16\x63hannels_conf_record_m\x12\x0f\n\x07version\x18\x01 \x02(\r\x12\x0c\n\x04name\x18\x02 \x01(\t\x12\x11\n\tfrequency\x18\x03 \x01(\r\x12\x12\n\nmodulation\x18\x04 \x01(\t\x12\x10\n\x08video_id\x18\x05 \x01(\r\x12\x10\n\x08\x61udio_id\x18\x06 \x01(\r\x12\x12\n\nprogram_id\x18\x07 \x01(\r\x1a\x37\n\x08target_m\x12\x0f\n\x07version\x18\x01 \x02(\r\x12\x0c\n\x04host\x18\x02 \x01(\t\x12\x0c\n\x04port\x18\x03 \x01(\x05\"2\n\x10parameter_type_e\x12\x0c\n\x08VCHANNEL\x10\x00\x12\x10\n\x0c\x43HANNELSCONF\x10\x01')
+  serialized_pb='\n\ntune.proto\x12\x08tvserver\"\x84\x04\n\x04tune\x12\x0f\n\x07version\x18\x01 \x02(\r\x12\x14\n\x0ctuning_bigid\x18\x02 \x01(\t\x12\x37\n\x0eparameter_type\x18\x03 \x01(\x0e\x32\x1f.tvserver.tune.parameter_type_e\x12+\n\x08vchannel\x18\x04 \x01(\x0b\x32\x19.tvserver.tune.vchannel_m\x12\x42\n\x13\x63hannelsconf_record\x18\x05 \x01(\x0b\x32%.tvserver.tune.channels_conf_record_m\x12\'\n\x06target\x18\x06 \x01(\x0b\x32\x17.tvserver.tune.target_m\x1a\x1e\n\nvchannel_m\x12\x10\n\x08vchannel\x18\x01 \x01(\r\x1a\x85\x01\n\x16\x63hannels_conf_record_m\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x11\n\tfrequency\x18\x02 \x01(\r\x12\x12\n\nmodulation\x18\x03 \x01(\t\x12\x10\n\x08video_id\x18\x04 \x01(\r\x12\x10\n\x08\x61udio_id\x18\x05 \x01(\r\x12\x12\n\nprogram_id\x18\x06 \x01(\r\x1a&\n\x08target_m\x12\x0c\n\x04host\x18\x01 \x01(\t\x12\x0c\n\x04port\x18\x02 \x01(\x05\"2\n\x10parameter_type_e\x12\x0c\n\x08VCHANNEL\x10\x00\x12\x10\n\x0c\x43HANNELSCONF\x10\x01')
 
 
 
@@ -32,8 +32,8 @@ _TUNE_PARAMETER_TYPE_E = descriptor.EnumDescriptor(
   ],
   containing_type=None,
   options=None,
-  serialized_start=542,
-  serialized_end=592,
+  serialized_start=491,
+  serialized_end=541,
 )
 
 
@@ -45,15 +45,8 @@ _TUNE_VCHANNEL_M = descriptor.Descriptor(
   containing_type=None,
   fields=[
     descriptor.FieldDescriptor(
-      name='version', full_name='tvserver.tune.vchannel_m.version', index=0,
-      number=1, type=13, cpp_type=3, label=2,
-      has_default_value=False, default_value=0,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-    descriptor.FieldDescriptor(
-      name='vchannel', full_name='tvserver.tune.vchannel_m.vchannel', index=1,
-      number=2, type=13, cpp_type=3, label=1,
+      name='vchannel', full_name='tvserver.tune.vchannel_m.vchannel', index=0,
+      number=1, type=13, cpp_type=3, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
@@ -68,7 +61,7 @@ _TUNE_VCHANNEL_M = descriptor.Descriptor(
   is_extendable=False,
   extension_ranges=[],
   serialized_start=283,
-  serialized_end=330,
+  serialized_end=313,
 )
 
 _TUNE_CHANNELS_CONF_RECORD_M = descriptor.Descriptor(
@@ -79,50 +72,43 @@ _TUNE_CHANNELS_CONF_RECORD_M = descriptor.Descriptor(
   containing_type=None,
   fields=[
     descriptor.FieldDescriptor(
-      name='version', full_name='tvserver.tune.channels_conf_record_m.version', index=0,
-      number=1, type=13, cpp_type=3, label=2,
-      has_default_value=False, default_value=0,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-    descriptor.FieldDescriptor(
-      name='name', full_name='tvserver.tune.channels_conf_record_m.name', index=1,
-      number=2, type=9, cpp_type=9, label=1,
+      name='name', full_name='tvserver.tune.channels_conf_record_m.name', index=0,
+      number=1, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=unicode("", "utf-8"),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     descriptor.FieldDescriptor(
-      name='frequency', full_name='tvserver.tune.channels_conf_record_m.frequency', index=2,
-      number=3, type=13, cpp_type=3, label=1,
+      name='frequency', full_name='tvserver.tune.channels_conf_record_m.frequency', index=1,
+      number=2, type=13, cpp_type=3, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     descriptor.FieldDescriptor(
-      name='modulation', full_name='tvserver.tune.channels_conf_record_m.modulation', index=3,
-      number=4, type=9, cpp_type=9, label=1,
+      name='modulation', full_name='tvserver.tune.channels_conf_record_m.modulation', index=2,
+      number=3, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=unicode("", "utf-8"),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     descriptor.FieldDescriptor(
-      name='video_id', full_name='tvserver.tune.channels_conf_record_m.video_id', index=4,
+      name='video_id', full_name='tvserver.tune.channels_conf_record_m.video_id', index=3,
+      number=4, type=13, cpp_type=3, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    descriptor.FieldDescriptor(
+      name='audio_id', full_name='tvserver.tune.channels_conf_record_m.audio_id', index=4,
       number=5, type=13, cpp_type=3, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     descriptor.FieldDescriptor(
-      name='audio_id', full_name='tvserver.tune.channels_conf_record_m.audio_id', index=5,
+      name='program_id', full_name='tvserver.tune.channels_conf_record_m.program_id', index=5,
       number=6, type=13, cpp_type=3, label=1,
-      has_default_value=False, default_value=0,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-    descriptor.FieldDescriptor(
-      name='program_id', full_name='tvserver.tune.channels_conf_record_m.program_id', index=6,
-      number=7, type=13, cpp_type=3, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
@@ -136,8 +122,8 @@ _TUNE_CHANNELS_CONF_RECORD_M = descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=333,
-  serialized_end=483,
+  serialized_start=316,
+  serialized_end=449,
 )
 
 _TUNE_TARGET_M = descriptor.Descriptor(
@@ -148,22 +134,15 @@ _TUNE_TARGET_M = descriptor.Descriptor(
   containing_type=None,
   fields=[
     descriptor.FieldDescriptor(
-      name='version', full_name='tvserver.tune.target_m.version', index=0,
-      number=1, type=13, cpp_type=3, label=2,
-      has_default_value=False, default_value=0,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-    descriptor.FieldDescriptor(
-      name='host', full_name='tvserver.tune.target_m.host', index=1,
-      number=2, type=9, cpp_type=9, label=1,
+      name='host', full_name='tvserver.tune.target_m.host', index=0,
+      number=1, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=unicode("", "utf-8"),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     descriptor.FieldDescriptor(
-      name='port', full_name='tvserver.tune.target_m.port', index=2,
-      number=3, type=5, cpp_type=1, label=1,
+      name='port', full_name='tvserver.tune.target_m.port', index=1,
+      number=2, type=5, cpp_type=1, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
@@ -177,8 +156,8 @@ _TUNE_TARGET_M = descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=485,
-  serialized_end=540,
+  serialized_start=451,
+  serialized_end=489,
 )
 
 _TUNE = descriptor.Descriptor(
@@ -241,7 +220,7 @@ _TUNE = descriptor.Descriptor(
   is_extendable=False,
   extension_ranges=[],
   serialized_start=25,
-  serialized_end=592,
+  serialized_end=541,
 )
 
 _TUNE_VCHANNEL_M.containing_type = _TUNE;

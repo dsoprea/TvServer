@@ -1,0 +1,16 @@
+message driverlist {
+    required uint32 version = 1;
+}
+
+message driverlistresponse {
+    message driver {
+        optional string dcn = 1;
+        optional string name = 2;
+        optional string description = 3;
+    }
+
+    required uint32 version = 1;
+    optional bool success = 2;
+    
+    repeated driver drivers = 3;
+}

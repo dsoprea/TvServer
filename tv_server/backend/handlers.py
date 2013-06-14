@@ -1,16 +1,22 @@
 from tv_server import values
 
 from tv_server.cf import get
-from tv_server.device.drivers import get_device_from_big_id, get_big_id_from_device
+from tv_server.device.drivers import get_device_from_big_id, \
+                                     get_big_id_from_device, \
+                                     available_drivers
 from tv_server.big_id import BigId
 from tv_server.backend.protocol.acquire_pb2 import acquireresponse
 from tv_server.backend.protocol.tune_pb2 import tune
 from tv_server.backend.protocol.general_pb2 import generalresponse
 from tv_server.backend.protocol.devicestatus_pb2 import devicestatusresponse
+from tv_server.backend.protocol.devicelist_pb2 import devicelistresponse
+from tv_server.backend.protocol.driverlist_pb2 import driverlistresponse
+from tv_server.backend.protocol.driverinfo_pb2 import driverinforesponse
 from tv_server.device.tuner_info import TunerInfo
 from tv_server.interfaces.device.itunerdriver import TD_TYPE_CHANNELSCONF, \
                                                      TD_TYPE_VCHANNEL
 from tv_server.device.channels.channelsconf_record import ChannelsConfRecord
+
 
 class Handlers(object):
     def __init__(self):
@@ -125,18 +131,66 @@ class Handlers(object):
 
         response_msg = devicestatusresponse()
         response_msg.version = 1
+        response_msg.success = True
 
         for dcn, devices in response.iteritems():
             driver = response_msg.drivers.add()
-            driver.version = 1
             driver.dcn = dcn
             
             for bdid_str, tuners in devices.iteritems():
                 device = driver.devices.add()
-                device.version = 1
                 device.bdid = bdid_str
                 
                 for tuner_id in tuners:
                     device.tuner_ids.append(tuner_id)
             
         return response_msg
+
+    def handleDevicelist(self, message):
+        """Find devices for the given driver.
+
+        dcn: Driver class name
+        """
+
+        (driver_cls, device_cls) = available_drivers[message.dcn]
+        devices_raw = driver_cls().enumerate_devices()
+
+        response = devicelistresponse()
+        response.version = 1
+        response.success = True
+
+        for device in devices_raw:
+            device_msg = response.devices.add() 
+            device_msg.bdid = repr(get_big_id_from_device(device))
+            device_msg.address = device.address
+            device_msg.tuner_quantity = device.tuner_quantity
+
+        return response
+
+    def handleDriverlist(self, message):
+        response = driverlistresponse()
+        response.version = 1
+        response.success = True
+
+        for pair in available_drivers.iteritems():
+            (driver_cls_name, (driver_cls, device_cls)) = pair
+            driver = driver_cls()
+
+            driver_msg = response.drivers.add()
+            driver_msg.dcn = driver_cls_name
+            driver_msg.name = driver.name
+            driver_msg.description = driver.description
+
+        return response
+
+    def handleDriverinfo(self, message):
+        (driver_cls, device_cls) = available_drivers[message.dcn]
+        driver = driver_cls()
+        
+        response = driverinforesponse()
+        response.version = 1
+        response.success = True
+        response.tune_type = driver.tuner_data_type
+        response.stream_mimetype = driver.stream_mimetype  
+        
+        return response
