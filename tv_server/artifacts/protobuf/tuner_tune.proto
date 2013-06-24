@@ -16,7 +16,7 @@ message tuner_tune {
         optional string modulation = 3;
         optional uint32 video_id = 4;
         optional uint32 audio_id = 5;
-        optional uint32 program_id = 6;
+        optional uint32 stream_id = 6;
     }
 
     message target_m {

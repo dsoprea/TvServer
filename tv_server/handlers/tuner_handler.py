@@ -57,7 +57,7 @@ class TunerHandler(GetHandler):
         
         return { "Success": True }
 
-    def tuneccshort(self, btid, thost, tport, cc):
+    def tuneccshort(self, btid, cc, thost='127.0.0.1', tport=5000):
         """Tune a channel on a device requiring channels-conf data."""
 
         tuner = TunerInfo.build_from_id(btid)
@@ -73,7 +73,7 @@ class TunerHandler(GetHandler):
             raise RequestError("The CC string should have six colon-separated "
                                "parts.")
         
-        (name, freq, mod, vid, aid, pid) = cc_parts 
+        (name, freq, mod, vid, aid, sid) = cc_parts 
             
         tune_msg = tuner_tune()
         tune_msg.version = 1
@@ -84,7 +84,7 @@ class TunerHandler(GetHandler):
         tune_msg.channelsconf_record.modulation = mod;
         tune_msg.channelsconf_record.video_id = int(vid);
         tune_msg.channelsconf_record.audio_id = int(aid);
-        tune_msg.channelsconf_record.program_id = int(pid);
+        tune_msg.channelsconf_record.stream_id = int(sid);
         tune_msg.target.host = thost
         tune_msg.target.port = int(tport)
 

@@ -126,6 +126,11 @@ class Client(object):
         logging.debug("Sending [%s] message." % (message.__class__.__name__))
         
         raw_message = serialize_message(message)
+        
+        logging.debug("Message of type [%s] serialized to (%d) bytes." % 
+                      (message.__class__.__name__, len(raw_message)))
+
         response = self.__raw_send(raw_message)
         
         return response
+

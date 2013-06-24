@@ -94,7 +94,7 @@ class TunerHandler(object):
                                            mod=msg_cc.modulation,
                                            vid=msg_cc.video_id,
                                            aid=msg_cc.audio_id,
-                                           pid=msg_cc.program_id)
+                                           sid=msg_cc.stream_id)
 
             tuner.set_tune(cc_record, target)
 

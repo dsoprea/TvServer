@@ -2,26 +2,26 @@ from tv_server.big_id import BigId
 
 
 class ChannelsConfRecord(object):
-    def __init__(self, name, freq, mod, vid, aid, pid):
+    def __init__(self, name, freq, mod, vid, aid, sid):
         self.__name = name
         self.__frequency = freq
         self.__modulation = mod
         self.__video_id = int(vid)
         self.__audio_id = int(aid)
-        self.__program_id = int(pid)
+        self.__stream_id = int(sid)
 
         self.__identifier = repr(BigId().push(name).\
                                          push(freq).\
                                          push(mod).\
                                          push(vid).\
                                          push(aid).\
-                                         push(pid))
+                                         push(sid))
 
     @staticmethod
     def build_from_id(id_):
         big_id = BigId(id_)
         
-        program_id = big_id.pop()
+        stream_id = big_id.pop()
         audio_id = big_id.pop()
         video_id = big_id.pop()
         modulation = big_id.pop()
@@ -29,16 +29,16 @@ class ChannelsConfRecord(object):
         name = big_id.pop()
 
         return ChannelsConfRecord(name, frequency, modulation, video_id, 
-                                  audio_id, program_id)
+                                  audio_id, stream_id)
 
     def __str__(self):
-        return ('<CC NAME=[%s] F=[%s] M=[%s]>' % 
-                (self.__video_id, self.__audio_id, self.__program_id))
+        return ('<CC VID=[%s] AID=[%s] SID=[%s]>' % 
+                (self.__video_id, self.__audio_id, self.__stream_id))
 
     def __repr__(self):
-        return ('<CC NAME=[%s] F=[%s] M=[%s] V=[%d] A=[%d] P=[%d]>' % 
+        return ('<CC NAME=[%s] F=[%s] M=[%s] V=[%d] A=[%d] S=[%d]>' % 
                 (self.__name, self.__frequency, self.__modulation, 
-                 self.__video_id, self.__audio_id, self.__program_id))
+                 self.__video_id, self.__audio_id, self.__stream_id))
 
     @property
     def identifier(self):
@@ -65,5 +65,6 @@ class ChannelsConfRecord(object):
         return self.__audio_id
     
     @property
-    def program_id(self):
-        return self.__program_id
+    def stream_id(self):
+        return self.__stream_id
+

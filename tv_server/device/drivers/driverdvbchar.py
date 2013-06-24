@@ -1,5 +1,6 @@
 import sha
 import re
+import pyzap
 
 from multiprocessing import Process, Queue, Event
 from os.path import isfile, isdir, exists, basename
@@ -185,7 +186,8 @@ class _TuneChannel(Process, ManagedRoutine):
         queue.
         """
 
-        logging.debug("Executing tune.")
+        logging.debug("Executing tune using PyZap from location [%s]." % 
+                      (pyzap.__file__))
 
         tuner = self.__tuner
         device = self.__tuner.device
@@ -204,24 +206,24 @@ class _TuneChannel(Process, ManagedRoutine):
 
         # Get data from row in channels.conf .
 
-        name           = tuner.tune_data.name
-        frequency      = tuner.tune_data.frequency
+        name = tuner.tune_data.name
+        frequency = tuner.tune_data.frequency
         modulation_raw = tuner.tune_data.modulation
-        video_id       = tuner.tune_data.video_id
-        audio_id       = tuner.tune_data.audio_id
-        program_id     = tuner.tune_data.program_id
+        video_id = tuner.tune_data.video_id
+        audio_id = tuner.tune_data.audio_id
+        stream_id = tuner.tune_data.stream_id
 
         # Map from the modulation in the channels.conf to the modulation
         # required by PyZap.
 
-        file_to_pyzap_mod = { 'QPSK':   'QPSK',
-	                          'QAM16':  'QAM_16',
-	                          'QAM32':  'QAM_32',
-	                          'QAM64':  'QAM_64',
-	                          'QAM128': 'QAM_128',
-	                          'QAM256': 'QAM_256',
-	                          '8VSB':   'VSB_8',
-	                          '16VSB':  'VSB_16' }
+        file_to_pyzap_mod = { 'QPSK': 'QPSK',
+                              'QAM_16': 'QAM_16',
+                              'QAM_32': 'QAM_32',
+                              'QAM_64': 'QAM_64',
+                              'QAM_128': 'QAM_128',
+                              'QAM_256': 'QAM_256',
+	                          '8VSB': 'VSB_8',
+	                          '16VSB': 'VSB_16' }
 
         if modulation_raw not in file_to_pyzap_mod:
             raise KeyError("Could not convert channels.conf modulation [%s] "
@@ -239,10 +241,11 @@ class _TuneChannel(Process, ManagedRoutine):
 
         atsc_tune_info = ATSC_TUNE_INFO()
 
-        atsc_tune_info.frequency  = int(frequency)
+        atsc_tune_info.frequency = int(frequency)
         atsc_tune_info.modulation = int(pyzap_modulation)
-        atsc_tune_info.vpid       = int(video_id)
-        atsc_tune_info.apid       = int(audio_id)
+        atsc_tune_info.vpid = int(video_id)
+        atsc_tune_info.apid = int(audio_id)
+        atsc_tune_info.sid = int(stream_id)
 
         # Do the tune. This will continue until the driver emits a SIGALRM,
         # which will break the loop in ZapLib.
@@ -280,12 +283,15 @@ class _TuneChannel(Process, ManagedRoutine):
         logging.debug("Invoking tune call.")
 
         try:
-            c_azap_tune_silent(descriptor, atsc_tune_info, 1,
-                               STATUS_RECEIVER_CB(status_receiver))
+# TODO: Implement the other DVB types.
+            result = c_azap_tune_silent(descriptor, atsc_tune_info, 1, 1,
+                                        STATUS_RECEIVER_CB(status_receiver))
         except:
             logging.exception("There was an exception while doing the "
                               "low-level tuning.")
             raise
+        else:
+            logging.debug("Tune result is (%d)." % (result))
 
     def cancel(self):
         """Stop tuning the channel. Called by original process. This call must
@@ -391,6 +397,9 @@ class DriverDvbChar(ITunerDriver):
 # not present).
 
             devices.append(device)
+
+        logging.debug("(%d) devices discovered for [%s]." % 
+                      (len(devices), self.name))
 
         return devices
 

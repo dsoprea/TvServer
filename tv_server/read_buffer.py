@@ -1,3 +1,5 @@
+import logging
+
 from threading import RLock
 from struct import unpack
 
@@ -33,6 +35,9 @@ class ReadBuffer(object):
         destructively read the remaining bytes. If both are successful, we then
         go back to remove the span from the front of the buffers.
         """
+
+        logging.debug("Checking (%d) received bytes for a message." % 
+                      (self.__length))
 
         with self.__class__.__locker:
             result = self.__passive_read(4 * 7)

@@ -11,7 +11,7 @@ from google.protobuf import descriptor_pb2
 DESCRIPTOR = descriptor.FileDescriptor(
   name='tuner_tune.proto',
   package='tvserver',
-  serialized_pb='\n\x10tuner_tune.proto\x12\x08tvserver\"\xa2\x04\n\ntuner_tune\x12\x0f\n\x07version\x18\x01 \x02(\r\x12\x14\n\x0ctuning_bigid\x18\x02 \x01(\t\x12=\n\x0eparameter_type\x18\x03 \x01(\x0e\x32%.tvserver.tuner_tune.parameter_type_e\x12\x31\n\x08vchannel\x18\x04 \x01(\x0b\x32\x1f.tvserver.tuner_tune.vchannel_m\x12H\n\x13\x63hannelsconf_record\x18\x05 \x01(\x0b\x32+.tvserver.tuner_tune.channels_conf_record_m\x12-\n\x06target\x18\x06 \x01(\x0b\x32\x1d.tvserver.tuner_tune.target_m\x1a\x1e\n\nvchannel_m\x12\x10\n\x08vchannel\x18\x01 \x01(\r\x1a\x85\x01\n\x16\x63hannels_conf_record_m\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x11\n\tfrequency\x18\x02 \x01(\r\x12\x12\n\nmodulation\x18\x03 \x01(\t\x12\x10\n\x08video_id\x18\x04 \x01(\r\x12\x10\n\x08\x61udio_id\x18\x05 \x01(\r\x12\x12\n\nprogram_id\x18\x06 \x01(\r\x1a&\n\x08target_m\x12\x0c\n\x04host\x18\x01 \x01(\t\x12\x0c\n\x04port\x18\x02 \x01(\x05\"2\n\x10parameter_type_e\x12\x0c\n\x08VCHANNEL\x10\x00\x12\x10\n\x0c\x43HANNELSCONF\x10\x01')
+  serialized_pb='\n\x10tuner_tune.proto\x12\x08tvserver\"\xa1\x04\n\ntuner_tune\x12\x0f\n\x07version\x18\x01 \x02(\r\x12\x14\n\x0ctuning_bigid\x18\x02 \x01(\t\x12=\n\x0eparameter_type\x18\x03 \x01(\x0e\x32%.tvserver.tuner_tune.parameter_type_e\x12\x31\n\x08vchannel\x18\x04 \x01(\x0b\x32\x1f.tvserver.tuner_tune.vchannel_m\x12H\n\x13\x63hannelsconf_record\x18\x05 \x01(\x0b\x32+.tvserver.tuner_tune.channels_conf_record_m\x12-\n\x06target\x18\x06 \x01(\x0b\x32\x1d.tvserver.tuner_tune.target_m\x1a\x1e\n\nvchannel_m\x12\x10\n\x08vchannel\x18\x01 \x01(\r\x1a\x84\x01\n\x16\x63hannels_conf_record_m\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x11\n\tfrequency\x18\x02 \x01(\r\x12\x12\n\nmodulation\x18\x03 \x01(\t\x12\x10\n\x08video_id\x18\x04 \x01(\r\x12\x10\n\x08\x61udio_id\x18\x05 \x01(\r\x12\x11\n\tstream_id\x18\x06 \x01(\r\x1a&\n\x08target_m\x12\x0c\n\x04host\x18\x01 \x01(\t\x12\x0c\n\x04port\x18\x02 \x01(\x05\"2\n\x10parameter_type_e\x12\x0c\n\x08VCHANNEL\x10\x00\x12\x10\n\x0c\x43HANNELSCONF\x10\x01')
 
 
 
@@ -32,8 +32,8 @@ _TUNER_TUNE_PARAMETER_TYPE_E = descriptor.EnumDescriptor(
   ],
   containing_type=None,
   options=None,
-  serialized_start=527,
-  serialized_end=577,
+  serialized_start=526,
+  serialized_end=576,
 )
 
 
@@ -107,7 +107,7 @@ _TUNER_TUNE_CHANNELS_CONF_RECORD_M = descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       options=None),
     descriptor.FieldDescriptor(
-      name='program_id', full_name='tvserver.tuner_tune.channels_conf_record_m.program_id', index=5,
+      name='stream_id', full_name='tvserver.tuner_tune.channels_conf_record_m.stream_id', index=5,
       number=6, type=13, cpp_type=3, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
@@ -123,7 +123,7 @@ _TUNER_TUNE_CHANNELS_CONF_RECORD_M = descriptor.Descriptor(
   is_extendable=False,
   extension_ranges=[],
   serialized_start=352,
-  serialized_end=485,
+  serialized_end=484,
 )
 
 _TUNER_TUNE_TARGET_M = descriptor.Descriptor(
@@ -156,8 +156,8 @@ _TUNER_TUNE_TARGET_M = descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=487,
-  serialized_end=525,
+  serialized_start=486,
+  serialized_end=524,
 )
 
 _TUNER_TUNE = descriptor.Descriptor(
@@ -220,7 +220,7 @@ _TUNER_TUNE = descriptor.Descriptor(
   is_extendable=False,
   extension_ranges=[],
   serialized_start=31,
-  serialized_end=577,
+  serialized_end=576,
 )
 
 _TUNER_TUNE_VCHANNEL_M.containing_type = _TUNER_TUNE;

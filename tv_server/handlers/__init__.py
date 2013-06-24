@@ -1,5 +1,6 @@
 import json
 import logging
+import inspect
 
 from web.webapi import BadRequest
 from web import header
@@ -67,8 +68,37 @@ class GetHandler(HandlerBase):
         except Exception as e:
             logging.exception(e)
             
-            message = str(e) if issubclass(e.__class__, RequestError) else \
-                      "There was an error."
+            if issubclass(e.__class__, RequestError):
+                message = str(e)
+            elif issubclass(e.__class__, TypeError):
+                arg_spec = inspect.getargspec(handler)
+                arg_names = arg_spec.args[1:]
+                defaults = {}
+                
+                if arg_spec.defaults is not None:
+                    default_values = arg_spec.defaults
+                    num_default_values = len(default_values)
+                    i = 0
+                    for k in arg_names[-num_default_values:]:
+                        defaults[k] = default_values[i]
+                        i += 1
+                    
+                    arg_names = arg_names[:-num_default_values]
+                    
+                arg_phrase = ', '.join(arg_names)
+
+                if defaults:
+                    if arg_phrase:
+                        arg_phrase += ", "
+                
+                    arg_phrase += ', '.join([(('%s(%s)') % (k, v)) 
+                                             for k, v 
+                                             in defaults.iteritems()])
+                
+                message = ("There was an error. Make sure your arguments are "
+                          "correct: %s" % (arg_phrase))
+            else:
+                message = "There was an error."
 
             return self.json_error(message, e.__class__.__name__) \
                     if self.__returns_json \
