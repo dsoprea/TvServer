@@ -15,6 +15,5 @@ X Finish streaming of local DVB devices.
 X GStreamer pipeline for RTP/H264 feed from HDHR figured-out.
 X GStreamer pipeline for local MPEGTS feed figured-out.
 > Finish GStreamer implementation.
-> Implement sessions.
 > Finish README.
 
