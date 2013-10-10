@@ -3,6 +3,7 @@ TvServer
 
 A REST-based interface for HDHomeRun and Video4Linux DVB TV tuners.
 
+This is currently a work-in-progress. Though TV tuners can be controlled, I am still debugging the GStreamer integration.
 
 Remaining Tasks
 ---------------
