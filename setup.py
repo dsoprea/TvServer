@@ -14,6 +14,8 @@ setup(name='tv_server',
       include_package_data=True,
       zip_safe=False,
       install_requires=[
+            'protobuf==2.5.0',
+            'pyzap==0.3.0',
             'web.py==0.37',
       ],
       scripts=[
