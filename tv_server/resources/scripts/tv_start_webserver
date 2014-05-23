@@ -1,0 +1,16 @@
+#!/usr/bin/env python2.7
+
+import sys
+import os.path
+
+dev_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
+sys.path.insert(0, dev_path)
+
+import web
+
+from tv_server import log_config
+from tv_server.config.ui.url import urls, mapping
+
+app = web.application(urls, mapping)
+app.run()
+

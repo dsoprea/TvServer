@@ -1,1 +1,6 @@
 *.pyc
+/bin/
+/lib/
+/include/
+/tv_server.egg-info/
+/.Python
