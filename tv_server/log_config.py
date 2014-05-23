@@ -1,17 +1,10 @@
-from logging import getLogger, Formatter, FileHandler, DEBUG, WARNING
-#from logging.handlers import SysLogHandler
+import logging
 
-default_logger = getLogger()
-default_logger.setLevel(DEBUG)
+logger = logging.getLogger()
+logger.setLevel(logging.DEBUG)
 
-log_format = 'TV: %(name)-12s %(levelname)-7s %(message)s'
-formatter = Formatter(log_format)
+ch = logging.StreamHandler()
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+ch.setFormatter(formatter)
+logger.addHandler(ch)
 
-#log_syslog = SysLogHandler(facility=SysLogHandler.LOG_LOCAL0)
-#log_syslog.setFormatter(formatter)
-#default_logger.addHandler(log_syslog)
-
-log_file = FileHandler('/tmp/tv_server.log')
-log_file.setFormatter(formatter)
-#log_file.setLevel(DEBUG)
-default_logger.addHandler(log_file)

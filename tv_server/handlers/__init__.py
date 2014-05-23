@@ -7,6 +7,8 @@ from web import header
 
 from tv_server.backend.client import Client
 
+_logger = logging.getLogger(__name__)
+
 
 class RequestError(Exception):
     pass
@@ -38,13 +40,15 @@ class HandlerBase(object):
 
     def json_response(self, data=None):
         header('Content-Type', 'application/json')
-        return json.dumps({ 'Error': None, 'Data': data })
+        return json.dumps(data)
 
     def json_error(self, message, error_type_name, data=None):
+        _logger.error("Returning error [%s]: [%s]", error_type_name, message)
+
         header('Content-Type', 'application/json')
-        return json.dumps({ 'Error': error_type_name,
-                            'Message': message, 
-                            'Data': data })
+
+        raise HttpError('418 ' + error_type_name, 
+                        data=json.dumps(data))
 
 
 class GetHandler(HandlerBase):

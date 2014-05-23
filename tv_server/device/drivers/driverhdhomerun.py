@@ -71,7 +71,7 @@ class DriverHdHomeRun(ITunerDriver):
     HdhrDeviceQuery                  = None
     HdhrVideo                        = None
     TYPE_hdhomerun_discover_device_t = None
-    get_hdhr                         = None
+    library_instance                 = None
 
     @staticmethod
     def __init_so():
@@ -79,17 +79,16 @@ class DriverHdHomeRun(ITunerDriver):
         try:
             from pyhdhomerun.adapter import HdhrUtility, HdhrDeviceQuery, HdhrVideo
             from pyhdhomerun.types import TYPE_hdhomerun_discover_device_t
-            from pyhdhomerun.hdhr import get_hdhr
+            import pyhdhomerun.hdhr
         except Exception as e:
             raise DriverRequirementsError("Could not load PyHdHomeRun: %s" % 
-                                          (str(e)), 
-                                          DriverHdHomeRun())
+                                          (str(e)))
 
         DriverHdHomeRun.HdhrUtility = HdhrUtility
         DriverHdHomeRun.HdhrDeviceQuery = HdhrDeviceQuery
         DriverHdHomeRun.HdhrVideo = HdhrVideo
         DriverHdHomeRun.TYPE_hdhomerun_discover_device_t = TYPE_hdhomerun_discover_device_t
-        DriverHdHomeRun.get_hdhr = get_hdhr
+        DriverHdHomeRun.library_instance = pyhdhomerun.hdhr.library
 
     def __init__(self):
 
@@ -286,3 +285,4 @@ class DriverHdHomeRun(ITunerDriver):
     @property
     def stream_mimetype(self):
         return "video/mpegts"
+
